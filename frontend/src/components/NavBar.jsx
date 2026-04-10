@@ -42,7 +42,7 @@ function NavBar() {
         </div>
 
         {/* ================= RIGHT (ICONS) ================= */}
-        <div className="flex items-center gap-6 cursor-pointer ml-auto px-12">
+        <div className="flex items-center gap-6 cursor-pointer ml-auto">
           <img
             src="../../public/frontend_assets/search_icon.png"
             className="w-5 min-w-5"

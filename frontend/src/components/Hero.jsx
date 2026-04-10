@@ -13,10 +13,7 @@ function Hero() {
             </p>
           </div>
 
-          <h1
-            className="text-4xl md:text-5xl font-light"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
+          <h1 className="text-4xl md:text-5xl prata-regular  font-light">
             Latest Arrivals
           </h1>
 
