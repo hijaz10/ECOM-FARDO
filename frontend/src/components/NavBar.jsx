@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const navLinks = [
   { path: "/", label: "Home" },
@@ -70,7 +70,7 @@ function NavBar() {
               alt="cart_icon"
               className="w-5 min-w-5"
             />
-            <p className="absolute -right-1.25 w-3.5 h-3.5 -bottom-1.25 text-center leading-4 bg-secondary-foreground text-white rounded aspect-square text-[8px]">
+            <p className="absolute -right-1.25 w-4 h-4 -bottom-1.25 text-center leading-4 bg-secondary-foreground text-white rounded aspect-square text-[8px]">
               10
             </p>
           </Link>
@@ -92,13 +92,13 @@ function NavBar() {
           <ul className="flex flex-col gap-4 mt-4">
             {navLinks.map((link) => (
               <li key={link.path}>
-                <Link
+                <NavLink
                   to={link.path}
                   onClick={() => setIsOpen(false)}
                   className="font-bold text-sm"
                 >
                   {link.label.toUpperCase()}
-                </Link>
+                </NavLink>
               </li>
             ))}
           </ul>
