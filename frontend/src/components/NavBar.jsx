@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import { ShopContext } from "../context/ShopContext";
+import { assets } from "../assets/assets/assets";
 
 const navLinks = [
   { path: "/", label: "Home" },
@@ -11,6 +13,7 @@ const navLinks = [
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { setShowSearch, showSearch, getCartCount } = useContext(ShopContext);
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-background border-b border-muted-foreground z-50">
@@ -44,17 +47,20 @@ function NavBar() {
         {/* ================= RIGHT (ICONS) ================= */}
         <div className="flex items-center gap-6 cursor-pointer ml-auto">
           <img
-            src="../../public/frontend_assets/search_icon.png"
+            onClick={() => setShowSearch(!showSearch)}
+            src={assets.search_icon}
             className="w-5 min-w-5"
             alt="search_icon"
           />
 
           <div className="relative group">
-            <img
-              src="../../public/frontend_assets/profile_icon.png"
-              alt="Profile_icon"
-              className="w-5 min-w-5"
-            />
+            <Link to="/login">
+              <img
+                src={assets.profile_icon}
+                alt="Profile_icon"
+                className="w-5 min-w-5"
+              />
+            </Link>
             <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
               <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 rounded">
                 <p className="hover:text-primary">My Profile</p>
@@ -66,12 +72,12 @@ function NavBar() {
 
           <Link to="/cart" className="relative">
             <img
-              src="../../public/frontend_assets/cart_icon.png"
+              src={assets.cart_icon}
               alt="cart_icon"
               className="w-5 min-w-5"
             />
             <p className="absolute -right-1.25 w-4 h-4 -bottom-1.25 text-center leading-4 bg-secondary-foreground text-white rounded aspect-square text-[8px]">
-              10
+              {getCartCount()}
             </p>
           </Link>
         </div>
