@@ -1,4 +1,5 @@
 import React from "react";
+import { assets } from "../assets/assets/assets";
 
 function Hero() {
   return (
@@ -29,7 +30,7 @@ function Hero() {
       {/* RIGHT SECTION - hero image */}
       <div className="w-full sm:w-1/2 bg-pink-100">
         <img
-          src="/hero_img.png"
+          src={assets.hero_img}
           alt="Latest Arrivals"
           className="w-full h-full object-cover object-top"
         />

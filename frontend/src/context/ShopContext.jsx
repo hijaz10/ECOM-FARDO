@@ -1,14 +1,28 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import { products } from "../assets/assets/assets";
 import { toast } from "react-toastify";
+import axios from "axios";
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
   const currency = "$";
   const delivery_fee = 10;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [search, setSearch] = useState("");
+  //const [products, setProducts] = useState("");
   const [showSearch, setShowSearch] = useState(true);
   const [cartItems, setCartItems] = useState({});
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+
+  /*
+  useEffect(() => {
+    getProductsData();
+  }, []);
+*/
+
+  useEffect(() => {
+    localStorage.setItem("token", token);
+  }, [token]);
 
   const addToCart = (itemId, size) => {
     if (!size) {
@@ -63,6 +77,24 @@ const ShopContextProvider = (props) => {
     return total;
   };
 
+  /*
+  const getProductsData = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/api/product/list`);
+
+      if (response.data.success) {
+        setProducts(response.data.products);
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
+
+  */
+
   const value = {
     products,
     currency,
@@ -76,6 +108,9 @@ const ShopContextProvider = (props) => {
     getCartCount,
     updateQuantity,
     getCartAmount,
+    backendUrl,
+    token,
+    setToken,
   };
 
   return (

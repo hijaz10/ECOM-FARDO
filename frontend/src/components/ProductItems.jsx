@@ -8,13 +8,13 @@ function ProductItems({ id, image, name, price }) {
   return (
     <Link
       className="text-muted-foreground cursor-pointer"
-      to={`./product/${id}`}
+      to={`/product/${id}`}
     >
       <div className="overflow-hidden">
         <img
           className="hover:scale-110 transition ease-in-out"
           src={image[0]}
-          alt=""
+          alt={name}
         />
       </div>
       <p className="pt-3 pb-2 text-sm">{name}</p>

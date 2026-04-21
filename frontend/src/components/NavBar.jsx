@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, Navigate, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets/assets";
-
+import { useNavigate } from "react-router-dom";
 const navLinks = [
   { path: "/", label: "Home" },
   { path: "/collection", label: "Collection" },
@@ -13,8 +13,27 @@ const navLinks = [
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { setShowSearch, showSearch, getCartCount } = useContext(ShopContext);
+  const navigate = useNavigate();
 
+  const {
+    setShowSearch,
+    showSearch,
+    getCartCount,
+    token,
+    setToken,
+    setCartItems,
+  } = useContext(ShopContext);
+
+  const logout = () => {
+    navigate("/login");
+    localStorage.removeItem("token");
+    setToken("");
+    setCartItems({});
+  };
+
+  const orders = () => {
+    navigate("/orders");
+  };
   return (
     <nav className="fixed top-0 left-0 w-full bg-background border-b border-muted-foreground z-50">
       <div className="flex items-center px-6 h-16">
@@ -54,20 +73,25 @@ function NavBar() {
           />
 
           <div className="relative group">
-            <Link to="/login">
-              <img
-                src={assets.profile_icon}
-                alt="Profile_icon"
-                className="w-5 min-w-5"
-              />
-            </Link>
-            <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
-              <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 rounded">
-                <p className="hover:text-primary">My Profile</p>
-                <p className="hover:text-primary">Orders</p>
-                <p className="hover:text-primary">Logout</p>
+            <img
+              onClick={() => (token ? null : navigate("/login"))}
+              src={assets.profile_icon}
+              alt="Profile_icon"
+              className="w-5 min-w-5"
+            />
+            {token && (
+              <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
+                <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 rounded">
+                  <p className="hover:text-primary">My Profile</p>
+                  <p className="hover:text-primary" onClick={orders}>
+                    Orders
+                  </p>
+                  <p className="hover:text-primary" onClick={logout}>
+                    Logout
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <Link to="/cart" className="relative">
