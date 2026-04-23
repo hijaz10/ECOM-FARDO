@@ -1,32 +1,49 @@
 import React, { useContext, useState, useEffect } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function Orders() {
-  const { products, currency, cartItems } = useContext(ShopContext);
+  const { products, currency, cartItems, token } = useContext(ShopContext);
   const [orderData, setOrderData] = useState([]);
+  const loadOrders = async () => {
+    try {
+      if (!token) {
+        return null;
+      }
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/order/user-orders`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (response.data.success) {
+        console.log(response.data);
+        let allOrdersItem = [];
+
+        response.data.orders.map((order) => {
+          order.items.map((item) => {
+            item["status"] = order.status;
+            item["payment"] = order.payment;
+            item["paymentMethod"] = order.paymentMethod;
+            item["date"] = order.date;
+
+            allOrdersItem.push(item);
+          });
+        });
+
+        setOrderData(allOrdersItem.reverse());
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong please try again");
+    }
+  };
 
   useEffect(() => {
-    const tempData = [];
-    for (const itemId in cartItems) {
-      for (const size in cartItems[itemId]) {
-        if (cartItems[itemId][size] > 0) {
-          const product = products.find((p) => p._id === itemId);
-          if (product) {
-            tempData.push({
-              ...product,
-              size,
-              quantity: cartItems[itemId][size],
-              date: new Date().toDateString(),
-              payment: "COD",
-              status: "Order Placed",
-            });
-          }
-        }
-      }
-    }
-    setOrderData(tempData);
-  }, [cartItems, products]);
+    loadOrders();
+  }, [token]);
 
   return (
     <div className="">
@@ -59,7 +76,7 @@ function Orders() {
                   <p>Quantity: {item.quantity}</p>
                   <p>Size: {item.size}</p>
                   <p>Date: {item.date}</p>
-                  <p>Payment: {item.payment}</p>
+                  <p>Payment: {item.paymentMethod}</p>
                 </div>
               </div>
             </div>
@@ -70,7 +87,10 @@ function Orders() {
                 <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                 <p className="text-sm font-medium">{item.status}</p>
               </div>
-              <button className="border border-border px-4 py-2 text-xs font-semibold uppercase tracking-widest hover:border-primary hover:text-primary transition-all">
+              <button
+                onClick={loadOrders}
+                className="border border-border px-4 py-2 text-xs font-semibold uppercase tracking-widest hover:border-primary hover:text-primary transition-all"
+              >
                 Track Order
               </button>
             </div>

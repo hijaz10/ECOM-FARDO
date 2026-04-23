@@ -14,12 +14,6 @@ const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [token, setToken] = useState(localStorage.getItem("token") || "");
 
-  /*
-  useEffect(() => {
-    getProductsData();
-  }, []);
-*/
-
   useEffect(() => {
     localStorage.setItem("token", token);
   }, [token]);
@@ -93,6 +87,75 @@ const ShopContextProvider = (props) => {
     }
   };
 
+  // ************************CART METHOD****************************
+
+  // add to cart - sync with backend
+const addToCart = async (itemId, size) => {
+  if (!size) return;
+
+  setCartItems((prev) => {
+    const updated = structuredClone(prev);
+    if (updated[itemId]) {
+      updated[itemId][size] = (updated[itemId][size] || 0) + 1;
+    } else {
+      updated[itemId] = { [size]: 1 };
+    }
+    return updated;
+  });
+
+  if (token) {
+    await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/api/cart/add`,
+      { itemId, size },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+};
+
+// update quantity - sync with backend
+const updateQuantity = async (itemId, size, quantity) => {
+  setCartItems((prev) => {
+    const updated = structuredClone(prev);
+    updated[itemId][size] = quantity;
+    return updated;
+  });
+
+  if (token) {
+    await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/api/cart/update`,
+      { itemId, size, quantity },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+};
+
+// load cart from backend on login
+const getUserCart = async (t) => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/api/cart/get`,
+      { headers: { Authorization: `Bearer ${t}` } }
+    );
+    if (response.data.success) {
+      setCartItems(response.data.cartData);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+//Getsproduct once
+  useEffect(() => {
+    getProductsData();
+  }, []);
+
+
+// call getUserCart when token loads
+useEffect(() => {
+  if (token) {
+    getUserCart(token);
+  }
+}, [token]);
   */
 
   const value = {
@@ -104,6 +167,8 @@ const ShopContextProvider = (props) => {
     search,
     setSearch,
     cartItems,
+    cartItems,
+    setCartItems,
     addToCart,
     getCartCount,
     updateQuantity,

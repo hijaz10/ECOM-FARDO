@@ -3,9 +3,19 @@ import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets/assets";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function PlaceOrder() {
-  const { currency, delivery_fee, getCartAmount } = useContext(ShopContext);
+  const {
+    currency,
+    delivery_fee,
+    getCartAmount,
+    cartItems,
+    products,
+    token,
+    setCartItems,
+  } = useContext(ShopContext);
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [formData, setFormData] = useState({
@@ -42,14 +52,90 @@ function PlaceOrder() {
     return newErrors;
   };
 
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
+
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    navigate("/orders");
+
+    if (!token) {
+      toast.error("Please login to place an order");
+      navigate("/login");
+      return;
+    }
+
+    const cartIsEmpty = Object.keys(cartItems).every((itemId) =>
+      Object.values(cartItems[itemId]).every((qty) => qty === 0),
+    );
+
+    if (cartIsEmpty) {
+      toast.error("Your cart is empty");
+      navigate("/collection");
+      return;
+    }
+
+    try {
+      // build order items from cartItems
+      const orderItems = [];
+      for (const itemId in cartItems) {
+        for (const size in cartItems[itemId]) {
+          if (cartItems[itemId][size] > 0) {
+            const product = products.find((p) => p._id === itemId);
+            if (product) {
+              orderItems.push({
+                ...product,
+                size,
+                quantity: cartItems[itemId][size],
+              });
+            }
+          }
+        }
+      }
+
+      const orderData = {
+        items: orderItems,
+        amount: getCartAmount() + delivery_fee,
+        address: formData,
+      };
+
+      if (paymentMethod === "cod") {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/order/place`,
+          orderData,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        if (response.data.success) {
+          toast.success("Order placed successfully!");
+          setCartItems({});
+          setTimeout(() => navigate("/orders"), 1500);
+        } else {
+          alert(response.data.message);
+        }
+      }
+
+      if (paymentMethod === "stripe") {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/order/place-stripe`,
+          orderData,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        if (response.data.success) {
+          toast.success("Order placed successfully!");
+          setCartItems({});
+          setTimeout(() => navigate("/orders"), 1500);
+        } else {
+          toast.error(response.data.message);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   const inputClass = (field) =>
