@@ -43,8 +43,8 @@
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px #0f4c75 inset;
-    -webkit-text-fill-color: white;
+    -webkit-box-shadow: 0 0 0px 1000px var(--color-background) inset;
+    -webkit-text-fill-color: var(--color-foreground);
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -64,6 +64,13 @@
   .font-display {
     font-family: var(--font-display);
   }
+
+  .logo-font {
+    font-family: "Playfair Display", serif;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
   .prata-regular {
     font-family: "prata", serif;
     font-weight: 400;
@@ -186,6 +193,51 @@
     }
   }
 
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out both;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.6s ease-out both;
+  }
+
+  .animate-zoom-in {
+    animation: zoom-in 0.4s ease-out both;
+  }
+
   .animate-marquee-vertical {
     animation: marquee-vertical 10s linear infinite;
   }
@@ -195,6 +247,10 @@
   }
   .animate-float {
     animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-float-once {
+    animation: float 4s ease-in-out;
   }
   .animate-marquee {
     animation: marquee 30s linear infinite;
