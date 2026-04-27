@@ -28,8 +28,28 @@ const Product = () => {
 
   if (!productData) {
     return (
-      <div className="text-center py-20 text-muted-foreground text-sm">
-        Product not found.
+      <div className="pt-10 animate-pulse">
+        <div className="flex flex-col sm:flex-row gap-10">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 flex-1">
+            <div className="flex sm:flex-col gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-muted w-16 h-16 shrink-0" />
+              ))}
+            </div>
+            <div className="flex-1 bg-muted h-[400px] sm:h-[500px]" />
+          </div>
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="bg-muted h-8 w-3/4 rounded" />
+            <div className="bg-muted h-6 w-1/4 rounded" />
+            <div className="bg-muted h-20 w-full rounded" />
+            <div className="flex gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-muted h-10 w-14 rounded" />
+              ))}
+            </div>
+            <div className="bg-muted h-12 w-36 rounded" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -41,12 +61,9 @@ const Product = () => {
     .slice(0, 4);
 
   return (
-    <div className="pt-10">
-      {/* PRODUCT DETAIL */}
+    <div className="pt-10 animate-slide-in-right">
       <div className="flex flex-col sm:flex-row gap-10">
-        {/* LEFT - IMAGES */}
         <div className="flex flex-col-reverse sm:flex-row gap-3 flex-1">
-          {/* THUMBNAILS */}
           <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto">
             {productData.image.map((img, index) => (
               <img
@@ -62,8 +79,6 @@ const Product = () => {
               />
             ))}
           </div>
-
-          {/* MAIN IMAGE */}
           <div className="flex-1">
             <img
               src={selectedImage}
@@ -73,20 +88,16 @@ const Product = () => {
           </div>
         </div>
 
-        {/* RIGHT - INFO */}
         <div className="flex-1 flex flex-col gap-4">
           <h1 className="text-2xl font-medium">{productData.name}</h1>
-
           <p className="text-2xl font-semibold">
             {currency}
             {productData.price}
           </p>
-
           <p className="text-sm text-muted-foreground leading-relaxed">
             {productData.description}
           </p>
 
-          {/* SIZES */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest mb-3">
               Select Size
@@ -111,11 +122,8 @@ const Product = () => {
             )}
           </div>
 
-          {/* ADD TO CART */}
           <button
-            onClick={() => {
-              addToCart(productData._id, selectedSize);
-            }}
+            onClick={() => addToCart(productData._id, selectedSize)}
             className="bg-primary text-primary-foreground px-8 py-3 text-sm font-semibold uppercase tracking-widest hover:bg-primary/90 transition-colors w-fit"
           >
             Add to Cart
@@ -123,7 +131,6 @@ const Product = () => {
 
           <hr className="border-border" />
 
-          {/* META */}
           <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             <p>
               Category:{" "}
@@ -140,9 +147,7 @@ const Product = () => {
         </div>
       </div>
 
-      {/* ===== DESCRIPTION & REVIEWS TAB SECTION ===== */}
       <div className="mt-20">
-        {/* TABS */}
         <div className="flex border-b border-border">
           <button
             onClick={() => setActiveTab("description")}
@@ -166,7 +171,6 @@ const Product = () => {
           </button>
         </div>
 
-        {/* DESCRIPTION TAB */}
         {activeTab === "description" && (
           <div className="py-8 flex flex-col gap-4 text-sm text-muted-foreground leading-relaxed">
             <p>{productData.description}</p>
@@ -185,10 +189,8 @@ const Product = () => {
           </div>
         )}
 
-        {/* REVIEWS TAB */}
         {activeTab === "reviews" && (
           <div className="py-8 flex flex-col gap-6">
-            {/* SAMPLE REVIEWS */}
             {[
               {
                 name: "Ahmed K.",
@@ -235,8 +237,6 @@ const Product = () => {
                 </p>
               </div>
             ))}
-
-            {/* WRITE A REVIEW */}
             <div className="mt-4">
               <p className="text-sm font-semibold uppercase tracking-widest mb-4">
                 Write a Review
@@ -261,7 +261,6 @@ const Product = () => {
         )}
       </div>
 
-      {/* RELATED PRODUCTS */}
       {relatedProducts.length > 0 && (
         <div className="mt-20">
           <div className="text-center mb-8">
