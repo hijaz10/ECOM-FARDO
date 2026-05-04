@@ -38,15 +38,18 @@ function Footer() {
             </li>
             <li>
               <Link
-                to="/collection"
+                to="/contact"
                 className="hover:text-primary transition-colors"
               >
-                Collection
+                Contact
               </Link>
             </li>
             <li>
-              <Link className="hover:text-primary transition-colors">
-                Privacy Policy
+              <Link
+                to="/collection"
+                className="hover:text-primary transition-colors"
+              >
+                Shop
               </Link>
             </li>
           </ul>
