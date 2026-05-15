@@ -3,20 +3,16 @@ import userModel from "../models/user.model.js";
 // ADD TO CART
 const addToCart = async (req, res) => {
   try {
-    const { itemId, size } = req.body;
+    const { itemId } = req.body;
     const userId = req.userId;
 
     const user = await userModel.findById(userId);
     const cartData = user.cartData || {};
 
     if (cartData[itemId]) {
-      if (cartData[itemId][size]) {
-        cartData[itemId][size] += 1;
-      } else {
-        cartData[itemId][size] = 1;
-      }
+      cartData[itemId] += 1;
     } else {
-      cartData[itemId] = { [size]: 1 };
+      cartData[itemId] = 1;
     }
 
     await userModel.findByIdAndUpdate(userId, { cartData });
@@ -30,20 +26,16 @@ const addToCart = async (req, res) => {
 // UPDATE CART
 const updateCart = async (req, res) => {
   try {
-    const { itemId, size, quantity } = req.body;
+    const { itemId, quantity } = req.body;
     const userId = req.userId;
 
     const user = await userModel.findById(userId);
     const cartData = user.cartData || {};
 
     if (quantity === 0) {
-      delete cartData[itemId][size];
-      // clean up empty item object
-      if (Object.keys(cartData[itemId]).length === 0) {
-        delete cartData[itemId];
-      }
+      delete cartData[itemId];
     } else {
-      cartData[itemId][size] = quantity;
+      cartData[itemId] = quantity;
     }
 
     await userModel.findByIdAndUpdate(userId, { cartData });
