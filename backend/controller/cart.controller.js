@@ -18,7 +18,6 @@ const addToCart = async (req, res) => {
     await userModel.findByIdAndUpdate(userId, { cartData });
     res.json({ success: true, message: "Item added to cart" });
   } catch (error) {
-    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -41,7 +40,6 @@ const updateCart = async (req, res) => {
     await userModel.findByIdAndUpdate(userId, { cartData });
     res.json({ success: true, message: "Cart updated" });
   } catch (error) {
-    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -56,7 +54,6 @@ const getUserCart = async (req, res) => {
 
     res.json({ success: true, cartData });
   } catch (error) {
-    console.error(error);
     res.json({ success: false, message: error.message });
   }
 };
