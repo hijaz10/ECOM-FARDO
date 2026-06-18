@@ -239,7 +239,6 @@ const verifyPaystack = async (req, res) => {
     );
 
     const data = response.data.data;
-    console.log("PAYSTACK VERIFY DATA:", JSON.stringify(data, null, 2));
 
     if (data.status !== "success") {
       return res.json({ success: false, message: "Payment not successful" });
