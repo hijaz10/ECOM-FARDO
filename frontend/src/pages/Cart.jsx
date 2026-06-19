@@ -80,7 +80,10 @@ function Cart() {
                     <div className="flex items-center gap-3 mt-2 flex-wrap">
                       <p className="text-sm text-muted-foreground">
                         {currency}
-                        {product.price}
+                        {product.price.toLocaleString("en-NG", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </p>
 
                       {/* SHADE BADGE */}
@@ -143,19 +146,31 @@ function Cart() {
                   <div className="flex justify-between py-2 border-b border-border">
                     <p className="text-muted-foreground">Subtotal</p>
                     <p>
-                      {currency} {getCartAmount().toFixed(2)}
+                      {currency}{" "}
+                      {getCartAmount().toLocaleString("en-NG", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </p>
                   </div>
                   <div className="flex justify-between py-2 border-b border-border">
                     <p className="text-muted-foreground">Shipping Fee</p>
                     <p>
-                      {currency} {delivery_fee}.00
+                      {currency}{" "}
+                      {delivery_fee.toLocaleString("en-NG", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </p>
                   </div>
                   <div className="flex justify-between py-2 font-semibold text-base">
                     <p>Total</p>
                     <p>
-                      {currency} {(getCartAmount() + delivery_fee).toFixed(2)}
+                      {currency}{" "}
+                      {(getCartAmount() + delivery_fee).toLocaleString(
+                        "en-NG",
+                        { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                      )}
                     </p>
                   </div>
                 </div>

@@ -334,7 +334,11 @@ function PlaceOrder() {
             <div className="flex justify-between py-2 border-b border-border">
               <p className="text-muted-foreground">Subtotal</p>
               <p>
-                {currency} {getCartAmount().toFixed(2)}
+                {currency}{" "}
+                {getCartAmount().toLocaleString("en-NG", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </p>
             </div>
 
@@ -353,7 +357,11 @@ function PlaceOrder() {
             <div className="flex justify-between py-1 font-semibold text-base">
               <p>Total</p>
               <p>
-                {currency} {getCartAmount().toFixed(2)}
+                {currency}{" "}
+                {getCartAmount().toLocaleString("en-NG", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </p>
             </div>
           </div>
