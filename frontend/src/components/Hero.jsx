@@ -25,19 +25,24 @@ const slides = [
 function Hero() {
   const [active, setActive] = useState(0);
   const navigate = useNavigate();
+
   const count = slides.length;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setActive((prev) => (prev + 1 < count ? prev + 1 : 0));
     }, 7000);
+
     return () => clearInterval(interval);
   }, [count]);
 
   const handleButton = (action) => {
     if (action === "latest") {
       const el = document.getElementById("latest");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
     } else {
       navigate(action);
     }
@@ -46,7 +51,10 @@ function Hero() {
   return (
     <div
       className="relative w-full overflow-hidden"
-      style={{ height: "100svh", minHeight: "500px" }}
+      style={{
+        height: "100svh",
+        minHeight: "500px",
+      }}
     >
       {slides.map((slide, i) => {
         const isActive = i === active;
@@ -61,17 +69,25 @@ function Hero() {
               pointerEvents: isActive ? "auto" : "none",
             }}
           >
-            {/* IMAGE */}
+            {/* IMAGE - optimized loading */}
             <picture className="absolute inset-0 w-full h-full">
-              <source media="(max-width: 767px)" srcSet={slide.imgMobile} />
-              <img
-                src={slide.img}
-                alt={slide.title}
-                className="absolute inset-0 w-full h-full object-cover object-center"
-              />
+              {isActive && (
+                <>
+                  <source media="(max-width: 767px)" srcSet={slide.imgMobile} />
+
+                  <img
+                    src={slide.img}
+                    alt={slide.title}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    fetchPriority={i === 0 ? "high" : "auto"}
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                  />
+                </>
+              )}
             </picture>
 
-            {/* GRADIENT */}
+            {/* DARK GRADIENT */}
             <div
               className="absolute inset-0"
               style={{
@@ -112,11 +128,14 @@ function Hero() {
                 }`}
                 style={{
                   fontSize: slide.nowrap
-                    ? "clamp(1.8rem, 11vw, 8rem)" // scales down more aggressively to fit inline
-                    : "clamp(2.8rem, 13vw, 8rem)", // original scaling for longer titles
+                    ? "clamp(1.8rem, 11vw, 8rem)"
+                    : "clamp(2.8rem, 13vw, 8rem)",
+
                   lineHeight: 0.92,
                   letterSpacing: "1.5px",
+
                   wordBreak: slide.nowrap ? "normal" : "break-word",
+
                   whiteSpace: slide.nowrap ? "nowrap" : "normal",
                 }}
               >
@@ -133,7 +152,21 @@ function Hero() {
               >
                 <button
                   onClick={() => handleButton(slide.buttonAction)}
-                  className="group relative w-fit px-6 py-3 sm:px-8 sm:py-3 text-xs uppercase font-light text-black bg-white/80 backdrop-blur-md border border-black/10 transition-all duration-500 hover:bg-black hover:text-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:scale-105 rounded-full active:scale-[0.98]"
+                  className="
+                  group relative w-fit 
+                  px-6 py-3 sm:px-8 sm:py-3
+                  text-xs uppercase font-light
+                  text-black bg-white/80
+                  backdrop-blur-md
+                  border border-black/10
+                  transition-all duration-500
+                  hover:bg-black
+                  hover:text-white
+                  hover:-translate-y-0.5
+                  hover:scale-105
+                  rounded-full
+                  active:scale-[0.98]
+                  "
                   style={{
                     letterSpacing: "0.22em",
                     minHeight: "44px",
@@ -141,7 +174,18 @@ function Hero() {
                   }}
                 >
                   <span className="relative z-10">{slide.buttonText}</span>
-                  <span className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-px bg-black transition-all duration-500 group-hover:w-3/4" />
+
+                  <span
+                    className="
+                    absolute left-1/2
+                    -translate-x-1/2
+                    bottom-0
+                    w-0 h-px
+                    bg-black
+                    transition-all duration-500
+                    group-hover:w-3/4
+                    "
+                  />
                 </button>
               </div>
             </div>
@@ -150,20 +194,35 @@ function Hero() {
       })}
 
       {/* INDICATORS */}
-      <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div
+        className="
+        absolute bottom-4 sm:bottom-5
+        left-1/2 -translate-x-1/2
+        z-20 flex gap-2
+        "
+      >
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setActive(i)}
-            className="transition-all duration-500 rounded-full"
+            className="
+            transition-all duration-500
+            rounded-full
+            "
             aria-label={`Go to slide ${i + 1}`}
             style={{
               width: i === active ? "24px" : "8px",
+
               height: "8px",
+
               minWidth: "8px",
+
               background: i === active ? "#fff" : "rgba(255,255,255,0.4)",
+
               border: "none",
+
               cursor: "pointer",
+
               padding: 0,
             }}
           />
