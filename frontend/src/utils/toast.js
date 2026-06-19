@@ -1,6 +1,5 @@
 import { toast as hotToast } from "react-hot-toast";
 
-// mimic react-toastify EXACT API
 const toast = {
   success: (msg) => hotToast.success(msg),
   error: (msg) => hotToast.error(msg),

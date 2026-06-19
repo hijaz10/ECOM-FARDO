@@ -1,42 +1,63 @@
 import { createContext, useState, useEffect } from "react";
-import { products } from "../assets/assets/assets";
-import { toast } from "react-toastify";
 import axios from "axios";
+import toast from "../utils/toast";
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
-  const currency = "$";
-  const delivery_fee = 10;
+  const currency = "NGN ";
+  const delivery_fee = 0;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [search, setSearch] = useState("");
-  //const [products, setProducts] = useState("");
   const [showSearch, setShowSearch] = useState(true);
-  const [cartItems, setCartItems] = useState({});
+  const [cartItems, setCartItems] = useState(() => {
+    const saved = localStorage.getItem("cartItems");
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [products, setProducts] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token") || "");
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => {
+        if (
+          response.data &&
+          response.data.success === false &&
+          (response.data.message === "Session expired. Please login again." ||
+            response.data.message === "Please login to continue" ||
+            response.data.message === "Not authorized, login again")
+        ) {
+          setToken("");
+          setCartItems({});
+          localStorage.removeItem("token");
+        }
+        return response;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+
+    // cleanup on unmount
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("token", token);
   }, [token]);
 
-  const addToCart = (itemId, size) => {
-    if (!size) {
-      toast.error("Select Product Size");
-      return;
-    }
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
 
+  const addToCart = (itemId, shade = null) => {
     setCartItems((prev) => {
       const updated = structuredClone(prev);
+      const key = shade || "__default__";
 
-      if (updated[itemId]) {
-        if (updated[itemId][size]) {
-          updated[itemId][size] += 1;
-        } else {
-          updated[itemId][size] = 1;
-        }
-      } else {
-        updated[itemId] = { [size]: 1 };
+      if (!updated[itemId]) {
+        updated[itemId] = {};
       }
-
+      updated[itemId][key] = (updated[itemId][key] || 0) + 1;
       return updated;
     });
   };
@@ -44,17 +65,23 @@ const ShopContextProvider = (props) => {
   const getCartCount = () => {
     let count = 0;
     for (const itemId in cartItems) {
-      for (const size in cartItems[itemId]) {
-        count += cartItems[itemId][size];
+      for (const key in cartItems[itemId]) {
+        count += cartItems[itemId][key];
       }
     }
     return count;
   };
 
-  const updateQuantity = (itemId, size, quantity) => {
+  const updateQuantity = (itemId, shade, quantity) => {
     setCartItems((prev) => {
       const updated = structuredClone(prev);
-      updated[itemId][size] = quantity;
+      const key = shade || "__default__";
+      if (quantity === 0) {
+        delete updated[itemId][key];
+        if (Object.keys(updated[itemId]).length === 0) delete updated[itemId];
+      } else {
+        updated[itemId][key] = quantity;
+      }
       return updated;
     });
   };
@@ -64,18 +91,17 @@ const ShopContextProvider = (props) => {
     for (const itemId in cartItems) {
       const product = products.find((p) => p._id === itemId);
       if (!product) continue;
-      for (const size in cartItems[itemId]) {
-        total += product.price * cartItems[itemId][size];
+      for (const key in cartItems[itemId]) {
+        total += product.price * cartItems[itemId][key];
       }
     }
     return total;
   };
 
-  /*
   const getProductsData = async () => {
     try {
+      if (products.length > 0) return;
       const response = await axios.get(`${backendUrl}/api/product/list`);
-
       if (response.data.success) {
         setProducts(response.data.products);
       } else {
@@ -87,76 +113,9 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  // ************************CART METHOD****************************
-
-  // add to cart - sync with backend
-const addToCart = async (itemId, size) => {
-  if (!size) return;
-
-  setCartItems((prev) => {
-    const updated = structuredClone(prev);
-    if (updated[itemId]) {
-      updated[itemId][size] = (updated[itemId][size] || 0) + 1;
-    } else {
-      updated[itemId] = { [size]: 1 };
-    }
-    return updated;
-  });
-
-  if (token) {
-    await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/cart/add`,
-      { itemId, size },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  }
-};
-
-// update quantity - sync with backend
-const updateQuantity = async (itemId, size, quantity) => {
-  setCartItems((prev) => {
-    const updated = structuredClone(prev);
-    updated[itemId][size] = quantity;
-    return updated;
-  });
-
-  if (token) {
-    await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/cart/update`,
-      { itemId, size, quantity },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  }
-};
-
-// load cart from backend on login
-const getUserCart = async (t) => {
-  try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL}/api/cart/get`,
-      { headers: { Authorization: `Bearer ${t}` } }
-    );
-    if (response.data.success) {
-      setCartItems(response.data.cartData);
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-//Getsproduct once
   useEffect(() => {
     getProductsData();
   }, []);
-
-
-// call getUserCart when token loads
-useEffect(() => {
-  if (token) {
-    getUserCart(token);
-  }
-}, [token]);
-  */
 
   const value = {
     products,
@@ -166,7 +125,6 @@ useEffect(() => {
     setShowSearch,
     search,
     setSearch,
-    cartItems,
     cartItems,
     setCartItems,
     addToCart,

@@ -16,7 +16,6 @@ function BestSeller() {
   const sectionRef = useRef(null);
   const navigate = useNavigate();
 
-  // responsive values
   const [dimensions, setDimensions] = useState({
     radius: 320,
     cardWidth: 160,
@@ -64,8 +63,9 @@ function BestSeller() {
   }, []);
 
   useEffect(() => {
-    const bestProduct = products.filter((item) => item.bestseller);
-    setBestSeller(bestProduct.slice(0, 7));
+    const bestProduct = products.filter((item) => item.bestSeller);
+    const shuffled = bestProduct.sort(() => Math.random() - 0.5);
+    setBestSeller(shuffled.slice(0, 4));
   }, [products]);
 
   const count = bestSeller.length;
@@ -93,7 +93,7 @@ function BestSeller() {
 
     const animate = () => {
       if (!pausedRef.current) {
-        angleRef.current += 0.3;
+        angleRef.current = (angleRef.current + 0.3) % 360;
         carousel.style.transform = `rotateY(${angleRef.current}deg)`;
       }
       animRef.current = requestAnimationFrame(animate);
@@ -109,20 +109,17 @@ function BestSeller() {
 
   return (
     <div className="my-10" ref={sectionRef}>
-      {/* TITLE */}
       <div className="text-center text-3xl py-8">
         <Title text1={"BEST"} text2={"SELLERS"} />
         <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-muted-foreground">
-          Our most loved pieces — chosen by customers like you.
+          Our most loved pieces. Chosen by customers like you.
         </p>
       </div>
 
-      {/* CAROUSEL */}
       <div
         className="relative w-full flex items-center justify-center overflow-hidden"
         style={{ height: `${sceneHeight}px`, perspective: "1000px" }}
       >
-        {/* BACKGROUND TEXT */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={triggered ? { opacity: 1 } : { opacity: 0 }}
@@ -138,7 +135,6 @@ function BestSeller() {
           FARDO
         </motion.p>
 
-        {/* CAROUSEL WRAPPER */}
         <div
           ref={carouselRef}
           style={{
@@ -185,46 +181,58 @@ function BestSeller() {
                     height: `${cardHeight}px`,
                     borderRadius: "12px",
                     overflow: "hidden",
-                    border: "2px solid #ffffff",
                     cursor: "pointer",
-                    background: "#fff",
-                    transition: "border-color 0.2s",
+                    position: "relative",
                   }}
-                  whileHover={{ borderColor: "#efe6e3" }}
                 >
+                  {/* IMAGE FILLS ENTIRE CARD */}
                   <img
                     src={product.image[0]}
                     alt={product.name}
                     style={{
                       width: "100%",
-                      height: "75%",
+                      height: "100%",
                       objectFit: "cover",
                       objectPosition: "top",
                       display: "block",
                     }}
                   />
-                  <div style={{ padding: "6px 8px" }}>
+
+                  {/* OVERLAY AT BOTTOM */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: "20px 10px 10px",
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                    }}
+                  >
                     <p
                       style={{
                         margin: 0,
                         fontSize: `${Math.max(9, cardWidth * 0.068)}px`,
-                        fontWeight: 600,
+                        fontWeight: 700,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        color: "#12124a",
+                        color: "#ffffff",
+                        letterSpacing: "0.03em",
                       }}
                     >
                       {product.name}
                     </p>
                     <p
                       style={{
-                        margin: 0,
-                        fontSize: `${Math.max(9, cardWidth * 0.068)}px`,
-                        color: "#6c5ce7",
+                        margin: "3px 0 0",
+                        fontSize: `${Math.max(9, cardWidth * 0.065)}px`,
+                        color: "rgba(255,255,255,0.75)",
+                        fontWeight: 400,
                       }}
                     >
-                      ${product.price}
+                      ₦{product.price.toLocaleString()}
                     </p>
                   </div>
                 </motion.div>
@@ -233,7 +241,6 @@ function BestSeller() {
           })}
         </div>
 
-        {/* HINT */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={triggered ? { opacity: 1 } : { opacity: 0 }}

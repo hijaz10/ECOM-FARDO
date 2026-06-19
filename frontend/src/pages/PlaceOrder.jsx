@@ -2,9 +2,11 @@ import React, { useContext, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { useNavigate } from "react-router-dom";
-import { assets } from "../assets/assets/assets";
 import axios from "axios";
+import { usePaystackPayment } from "react-paystack";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingBag, Check, Loader } from "lucide-react";
 
 function PlaceOrder() {
   const {
@@ -17,7 +19,7 @@ function PlaceOrder() {
     setCartItems,
   } = useContext(ShopContext);
   const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -30,6 +32,14 @@ function PlaceOrder() {
     phone: "",
   });
   const [errors, setErrors] = useState({});
+
+  const paystackConfig = {
+    email: formData.email || "customer@fardo.com",
+    amount: getCartAmount() * 100,
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+  };
+
+  const initializePaystackPayment = usePaystackPayment(paystackConfig);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -52,8 +62,28 @@ function PlaceOrder() {
     return newErrors;
   };
 
+  const buildOrderItems = () => {
+    const orderItems = [];
+    for (const itemId in cartItems) {
+      for (const shadeKey in cartItems[itemId]) {
+        if (cartItems[itemId][shadeKey] > 0) {
+          const product = products.find((p) => p._id === itemId);
+          if (product) {
+            orderItems.push({
+              ...product,
+              shade: shadeKey === "__default__" ? null : shadeKey,
+              quantity: cartItems[itemId][shadeKey],
+            });
+          }
+        }
+      }
+    }
+    return orderItems;
+  };
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
@@ -62,14 +92,16 @@ function PlaceOrder() {
     }
 
     if (!token) {
-      toast.error("Please login to place an order");
       navigate("/login");
+      toast.error("Please LogIn to place an order");
       return;
     }
 
-    const cartIsEmpty = Object.keys(cartItems).every((itemId) =>
-      Object.values(cartItems[itemId]).every((qty) => qty === 0),
-    );
+    const cartIsEmpty =
+      Object.keys(cartItems).length === 0 ||
+      Object.keys(cartItems).every((itemId) =>
+        Object.values(cartItems[itemId]).every((qty) => qty === 0),
+      );
 
     if (cartIsEmpty) {
       toast.error("Your cart is empty");
@@ -77,64 +109,71 @@ function PlaceOrder() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      // build order items from cartItems
-      const orderItems = [];
-      for (const itemId in cartItems) {
-        for (const size in cartItems[itemId]) {
-          if (cartItems[itemId][size] > 0) {
-            const product = products.find((p) => p._id === itemId);
-            if (product) {
-              orderItems.push({
-                ...product,
-                size,
-                quantity: cartItems[itemId][size],
-              });
-            }
-          }
-        }
-      }
+      const orderItems = buildOrderItems();
+
+      const reference = new Date().getTime().toString();
 
       const orderData = {
         items: orderItems,
-        amount: getCartAmount() + delivery_fee,
+        amount: getCartAmount(),
         address: formData,
+        reference,
       };
 
-      if (paymentMethod === "cod") {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/order/place`,
-          orderData,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/order/place-paystack`,
+        orderData,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
 
-        if (response.data.success) {
-          toast.success("Order placed successfully!");
-          setCartItems({});
-          setTimeout(() => navigate("/orders"), 1500);
-        } else {
-          alert(response.data.message);
-        }
-      }
+      if (response.data.success) {
+        const orderId = response.data.orderId;
 
-      if (paymentMethod === "stripe") {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/order/place-stripe`,
-          orderData,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
+        initializePaystackPayment({
+          onSuccess: async (paystackResponse) => {
+            try {
+              const verifyResponse = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/order/verify-paystack`,
+                {
+                  reference:
+                    paystackResponse.reference ||
+                    paystackResponse.trxref ||
+                    reference,
+                  orderId,
+                },
+                { headers: { Authorization: `Bearer ${token}` } },
+              );
 
-        if (response.data.success) {
-          toast.success("Order placed successfully!");
-          setCartItems({});
-          setTimeout(() => navigate("/orders"), 1500);
-        } else {
-          toast.error(response.data.message);
-        }
+              if (verifyResponse.data.success) {
+                toast.success("Payment successful! Order placed.");
+                setCartItems({});
+                navigate("/orders");
+              } else {
+                toast.error(
+                  "Payment verification failed. Please contact support.",
+                );
+                setIsSubmitting(false);
+              }
+            } catch (error) {
+              toast.error("Verification error. Please contact support.");
+              setIsSubmitting(false);
+            }
+          },
+          onClose: () => {
+            toast.error("Payment cancelled. Complete your order anytime.");
+            setIsSubmitting(false);
+          },
+        });
+      } else {
+        toast.error(response.data.message);
+        setIsSubmitting(false);
       }
     } catch (error) {
-      console.error(error);
       toast.error("Something went wrong. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -284,8 +323,8 @@ function PlaceOrder() {
         </div>
       </div>
 
-      {/* RIGHT - CART TOTALS + PAYMENT */}
-      <div className="flex flex-col gap-6 sm:w-80">
+      {/* RIGHT - TOTALS + PAYMENT */}
+      <div className="flex flex-col gap-5 sm:w-80">
         {/* CART TOTALS */}
         <div>
           <div className="mb-4">
@@ -298,18 +337,55 @@ function PlaceOrder() {
                 {currency} {getCartAmount().toFixed(2)}
               </p>
             </div>
-            <div className="flex justify-between py-2 border-b border-border">
-              <p className="text-muted-foreground">Shipping Fee</p>
-              <p>
-                {currency} {delivery_fee}.00
+
+            <div className="flex flex-col gap-1 py-1 border-b border-border">
+              <div className="flex justify-between">
+                <p className="text-muted-foreground">Shipping Fee</p>
+                <p className="text-primary font-semibold text-xs uppercase tracking-widest">
+                  Pay on Delivery
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Delivery fee is collected upon arrival of your order.
               </p>
             </div>
-            <div className="flex justify-between py-2 font-semibold text-base">
+
+            <div className="flex justify-between py-1 font-semibold text-base">
               <p>Total</p>
               <p>
-                {currency} {(getCartAmount() + delivery_fee).toFixed(2)}
+                {currency} {getCartAmount().toFixed(2)}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* DELIVERY NOTICE */}
+        <div
+          className="flex items-start gap-3 px-4  border border-border"
+          style={{ borderLeft: "3px solid var(--color-primary)" }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className="text-primary shrink-0 mt-0.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-foreground mb-1">
+              Delivery Notice
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              The amount shown does not include delivery fee. Our delivery team
+              will contact you with the fee based on your location. Payment is
+              made upon arrival of your order.
+            </p>
           </div>
         </div>
 
@@ -318,58 +394,73 @@ function PlaceOrder() {
           <div className="mb-4">
             <Title text1="PAYMENT" text2="METHOD" />
           </div>
-          <div className="flex flex-col gap-3">
-            {/* STRIPE */}
-            <div
-              onClick={() => setPaymentMethod("stripe")}
-              className={`flex items-center gap-3 border px-4 py-3 cursor-pointer transition-all ${
-                paymentMethod === "stripe" ? "border-primary" : "border-border"
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                  paymentMethod === "stripe"
-                    ? "border-primary"
-                    : "border-muted-foreground"
-                }`}
-              >
-                {paymentMethod === "stripe" && (
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                )}
-              </div>
-              <img src={assets.stripe_logo} alt="stripe" className="h-5" />
+          <div className="flex items-center gap-3 border px-4 py-3 border-primary">
+            <div className="w-4 h-4 rounded-full border-2 border-primary flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-primary" />
             </div>
-
-            {/* CASH ON DELIVERY */}
-            <div
-              onClick={() => setPaymentMethod("cod")}
-              className={`flex items-center gap-3 border px-4 py-3 cursor-pointer transition-all ${
-                paymentMethod === "cod" ? "border-primary" : "border-border"
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                  paymentMethod === "cod"
-                    ? "border-primary"
-                    : "border-muted-foreground"
-                }`}
-              >
-                {paymentMethod === "cod" && (
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                )}
-              </div>
-              <p className="text-sm font-medium">CASH ON DELIVERY</p>
-            </div>
+            <p className="text-sm font-medium text-[#00C3F7]">PAYSTACK</p>
           </div>
         </div>
 
-        {/* PLACE ORDER BUTTON */}
-        <button
+        {/* PLACE ORDER */}
+        <motion.button
           type="submit"
-          className="bg-primary text-primary-foreground px-8 py-3 text-sm font-semibold uppercase tracking-widest hover:bg-primary/90 transition-colors w-full"
+          disabled={isSubmitting}
+          whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+          whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+          className={`relative px-8 py-3 text-sm font-semibold uppercase tracking-widest transition-colors w-full overflow-hidden ${
+            isSubmitting
+              ? "bg-primary text-primary-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground"
+          }`}
         >
-          Place Order
-        </button>
+          {!isSubmitting && (
+            <span className="absolute inset-0 bg-white/10 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+          )}
+
+          {/* PROGRESS BAR when submitting */}
+          {isSubmitting && (
+            <motion.span
+              className="absolute bottom-0 left-0 h-0.5 bg-white/40"
+              initial={{ width: "0%" }}
+              animate={{ width: "90%" }}
+              transition={{ duration: 8, ease: "linear" }}
+            />
+          )}
+
+          <AnimatePresence mode="wait">
+            {isSubmitting ? (
+              <motion.span
+                key="processing"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-center gap-2"
+              >
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Loader size={14} />
+                </motion.span>
+                Processing...
+              </motion.span>
+            ) : (
+              <motion.span
+                key="place"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-center gap-2"
+              >
+                <ShoppingBag size={14} />
+                Place Order
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
     </form>
   );

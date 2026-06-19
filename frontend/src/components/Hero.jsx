@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { assets } from "../assets/assets/assets";
 
 const slides = [
   {
-    img: assets.hero_img,
+    img: "../../public/fardo_hero_sec.png",
+    imgMobile: "../../public/Momodumedia-6.jpg.jpeg", // portrait crop
     label: "Luxury Beauty Collection",
     title: "Own Your Glow",
     buttonText: "Explore Shop",
     buttonAction: "/collection",
+    nowrap: false,
   },
   {
-    img: "../../public/fardo_hero_sec.png",
-    label: "New Arrivals",
+    img: "../../public/Momodustudio-1139.jpg.jpeg",
+    imgMobile: "../../public/Momodustudio-1139-mobile.jpg.jpeg", // portrait crop
+    label: "Latest From Collection",
     title: "Fresh Styles",
-    buttonText: "Shop New Arrivals",
+    buttonText: "New Arrivals",
     buttonAction: "latest",
+    nowrap: true,
   },
 ];
 
@@ -28,7 +31,6 @@ function Hero() {
     const interval = setInterval(() => {
       setActive((prev) => (prev + 1 < count ? prev + 1 : 0));
     }, 7000);
-
     return () => clearInterval(interval);
   }, [count]);
 
@@ -46,120 +48,119 @@ function Hero() {
       className="relative w-full overflow-hidden"
       style={{ height: "100svh", minHeight: "500px" }}
     >
-      {/* SLIDES */}
-      {slides.map((slide, i) => (
-        <div
-          key={i}
-          className="absolute inset-0 transition-opacity duration-500"
-          style={{
-            opacity: i === active ? 1 : 0,
-            zIndex: i === active ? 10 : 0,
-            pointerEvents: i === active ? "auto" : "none",
-          }}
-        >
-          {/* IMAGE */}
-          <img
-            src={slide.img}
-            alt={slide.title}
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
+      {slides.map((slide, i) => {
+        const isActive = i === active;
 
-          {/* GRADIENT OVERLAY */}
+        return (
           <div
-            className="absolute inset-0"
+            key={i}
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
             style={{
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
-            }}
-          />
-
-          {/* CONTENT */}
-          <div
-            className="absolute inset-0 flex flex-col justify-end z-10"
-            style={{
-              padding: "clamp(1.5rem, 5vw, 4rem)",
-              paddingBottom: "clamp(4rem, 8vh, 6rem)",
+              opacity: isActive ? 1 : 0,
+              zIndex: isActive ? 10 : 0,
+              pointerEvents: isActive ? "auto" : "none",
             }}
           >
-            {/* LABEL */}
-            <p
-              className="uppercase text-white/60 font-light mb-3"
+            {/* IMAGE */}
+            <picture className="absolute inset-0 w-full h-full">
+              <source media="(max-width: 767px)" srcSet={slide.imgMobile} />
+              <img
+                src={slide.img}
+                alt={slide.title}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+            </picture>
+
+            {/* GRADIENT */}
+            <div
+              className="absolute inset-0"
               style={{
-                fontSize: "clamp(9px, 2vw, 13px)",
-                letterSpacing: "0.3em",
-                opacity: i === active ? undefined : 0,
-                animation:
-                  i === active
-                    ? "showContent 0.5s 0.7s ease-in-out forwards"
-                    : "none",
-                transform: "translateY(30px)",
-                filter: "blur(20px)",
-                visibility: "hidden",
-                animationFillMode: "forwards",
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 50%, transparent 100%)",
+              }}
+            />
+
+            {/* CONTENT */}
+            <div
+              className="absolute inset-0 flex flex-col justify-end z-10"
+              style={{
+                padding: "clamp(1.25rem, 4vw, 4rem)",
+                paddingBottom: "clamp(3.5rem, 9vh, 6rem)",
               }}
             >
-              {slide.label}
-            </p>
-
-            {/* TITLE */}
-            <h1
-              className="font-black uppercase text-white m-0 mb-6"
-              style={{
-                fontSize: "clamp(3rem, 12vw, 8rem)",
-                lineHeight: 0.9,
-                letterSpacing: "2px",
-                opacity: i === active ? undefined : 0,
-                animation:
-                  i === active
-                    ? "showContent 0.5s 1s ease-in-out forwards"
-                    : "none",
-                transform: "translateY(30px)",
-                filter: "blur(20px)",
-                visibility: "hidden",
-                animationFillMode: "forwards",
-              }}
-            >
-              {slide.title}
-            </h1>
-
-            {/* BUTTON */}
-            <div>
-              <button
-                onClick={() => handleButton(slide.buttonAction)}
-                className="group relative w-fit px-8 py-3 text-xs uppercase font-light text-black bg-white/80 backdrop-blur-md border border-black/10 transition-all duration-500 hover:bg-black hover:text-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:scale-105 rounded-full active:scale-[0.98]"
+              {/* LABEL */}
+              <p
+                className={`uppercase text-white/60 font-light mb-2 sm:mb-3 transition-all duration-700 ${
+                  isActive
+                    ? "opacity-100 translate-y-0 blur-0"
+                    : "opacity-0 translate-y-6 blur-lg"
+                }`}
                 style={{
+                  fontSize: "clamp(8px, 2.5vw, 13px)",
                   letterSpacing: "0.25em",
-                  opacity: i === active ? undefined : 0,
-                  animation:
-                    i === active
-                      ? "showContent 0.5s 1.3s ease-in-out forwards"
-                      : "none",
-                  transform: "translateY(30px)",
-                  filter: "blur(20px)",
-                  visibility: "hidden",
-                  animationFillMode: "forwards",
-                  pointerEvents: i === active ? "auto" : "none",
                 }}
               >
-                <span className="relative z-10">{slide.buttonText}</span>
+                {slide.label}
+              </p>
 
-                <span className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-px bg-black transition-all duration-500 group-hover:w-3/4" />
-              </button>
+              {/* TITLE */}
+              <h1
+                className={`font-black uppercase text-white m-0 mb-5 sm:mb-6 transition-all duration-700 ${
+                  isActive
+                    ? "opacity-100 translate-y-0 blur-0"
+                    : "opacity-0 translate-y-6 blur-lg"
+                }`}
+                style={{
+                  fontSize: slide.nowrap
+                    ? "clamp(1.8rem, 11vw, 8rem)" // scales down more aggressively to fit inline
+                    : "clamp(2.8rem, 13vw, 8rem)", // original scaling for longer titles
+                  lineHeight: 0.92,
+                  letterSpacing: "1.5px",
+                  wordBreak: slide.nowrap ? "normal" : "break-word",
+                  whiteSpace: slide.nowrap ? "nowrap" : "normal",
+                }}
+              >
+                {slide.title}
+              </h1>
+
+              {/* BUTTON */}
+              <div
+                className={`transition-all duration-700 ${
+                  isActive
+                    ? "opacity-100 translate-y-0 blur-0 pointer-events-auto"
+                    : "opacity-0 translate-y-6 blur-lg pointer-events-none"
+                }`}
+              >
+                <button
+                  onClick={() => handleButton(slide.buttonAction)}
+                  className="group relative w-fit px-6 py-3 sm:px-8 sm:py-3 text-xs uppercase font-light text-black bg-white/80 backdrop-blur-md border border-black/10 transition-all duration-500 hover:bg-black hover:text-white hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 hover:scale-105 rounded-full active:scale-[0.98]"
+                  style={{
+                    letterSpacing: "0.22em",
+                    minHeight: "44px",
+                    minWidth: "44px",
+                  }}
+                >
+                  <span className="relative z-10">{slide.buttonText}</span>
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-0 w-0 h-px bg-black transition-all duration-500 group-hover:w-3/4" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      {/* SLIDE INDICATORS */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {/* INDICATORS */}
+      <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setActive(i)}
             className="transition-all duration-500 rounded-full"
+            aria-label={`Go to slide ${i + 1}`}
             style={{
               width: i === active ? "24px" : "8px",
               height: "8px",
+              minWidth: "8px",
               background: i === active ? "#fff" : "rgba(255,255,255,0.4)",
               border: "none",
               cursor: "pointer",
@@ -168,29 +169,6 @@ function Hero() {
           />
         ))}
       </div>
-
-      {/* ANIMATION KEYFRAMES */}
-      <style>{`
-        @keyframes showContent {
-          0% {
-            opacity: 0;
-            transform: translateY(30px);
-            filter: blur(20px);
-            visibility: hidden;
-          }
-
-          1% {
-            visibility: visible;
-          }
-
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-            visibility: visible;
-          }
-        }
-      `}</style>
     </div>
   );
 }

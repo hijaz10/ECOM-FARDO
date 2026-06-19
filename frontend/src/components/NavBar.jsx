@@ -23,7 +23,6 @@ function NavBar() {
   const { setShowSearch, getCartCount, token, setToken, setCartItems } =
     useContext(ShopContext);
 
-  // 🔥 Scroll behavior
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -70,7 +69,7 @@ function NavBar() {
       `}
     >
       <div className="flex items-center px-6 h-full transition-all duration-500">
-        {/* ================= LOGO ================= */}
+        {/* LOGO  */}
         <div className="flex items-center">
           <Link
             to="/"
@@ -83,7 +82,7 @@ function NavBar() {
           </Link>
         </div>
 
-        {/* ================= NAV LINKS ================= */}
+        {/* NAV LINKS */}
         <div className="md:flex hidden items-center absolute left-1/2 transform -translate-x-1/2">
           <ul className="flex gap-8">
             {navLinks.map((link) => (
@@ -104,7 +103,7 @@ function NavBar() {
           </ul>
         </div>
 
-        {/* ================= RIGHT ICONS ================= */}
+        {/* RIGHT ICONS */}
         <div className="flex items-center gap-6 ml-auto">
           {/* SEARCH */}
           <img
@@ -137,7 +136,10 @@ function NavBar() {
             {token && (
               <div className="hidden group-hover:block absolute right-0 pt-4">
                 <div className="flex flex-col gap-2 w-40 py-4 px-5 bg-[rgba(250,247,245,0.92)] backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-white/20">
-                  <p className="hover:opacity-70 cursor-pointer transition-opacity">
+                  <p
+                    className="hover:opacity-70 cursor-pointer transition-opacity"
+                    onClick={() => navigate("/profile")}
+                  >
                     My Profile
                   </p>
 
@@ -190,7 +192,7 @@ function NavBar() {
           </Link>
         </div>
 
-        {/* ================= MOBILE BUTTON ================= */}
+        {/* MOBILE BUTTON  */}
         <button
           className={`md:hidden ml-auto p-2 transition-colors duration-300 ${
             scrolled ? "text-foreground" : "text-[#f5f2ef]"
@@ -201,7 +203,7 @@ function NavBar() {
         </button>
       </div>
 
-      {/* ================= MOBILE MENU ================= */}
+      {/* MOBILE MENU  */}
       {isOpen && (
         <div
           className="

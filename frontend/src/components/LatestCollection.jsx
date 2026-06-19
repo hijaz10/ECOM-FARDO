@@ -12,7 +12,7 @@ function LatestCollection() {
 
   useEffect(() => {
     if (products.length > 0) {
-      setLatestProducts(products.slice(0, 10));
+      setLatestProducts(products.slice(0, 6));
       setLoading(false);
     }
   }, [products]);
@@ -49,14 +49,14 @@ function LatestCollection() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 gap-y-8">
-          {Array.from({ length: 10 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 gap-y-8">
+          {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : (
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 gap-y-8"
+          className="grid grid-cols-2 sm:grid-cols-3 gap-5 gap-y-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="show"

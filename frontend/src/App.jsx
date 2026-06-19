@@ -21,6 +21,8 @@ import Faq from "./pages/Faq";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReturnPolicy from "./pages/ReturnPolicy";
+import TermsBanner from "./components/TermsBanner";
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
@@ -82,9 +84,10 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/return-policy" element={<ReturnPolicy />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-
+      <TermsBanner />
       <div className="mt-20">
         <Footer />
       </div>

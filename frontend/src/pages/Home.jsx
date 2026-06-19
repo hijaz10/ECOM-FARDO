@@ -14,7 +14,6 @@ function Home() {
       </div>
       <BestSeller />
       <LatestCollection />
-      <OurPolicy />
       <NewsLetter />
     </div>
   );
