@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 const slides = [
   {
-    img: "../../public/fardo_hero_sec.png",
-    imgMobile: "../../public/Momodumedia-6.jpg.jpeg", // portrait crop
+    img: "/fardo_hero_sec.png",
+    imgMobile: "/Momodumedia-6.jpg.jpeg",
     label: "Luxury Beauty Collection",
     title: "Own Your Glow",
     buttonText: "Explore Shop",
@@ -12,8 +12,8 @@ const slides = [
     nowrap: false,
   },
   {
-    img: "../../public/Momodustudio-1139.jpg.jpeg",
-    imgMobile: "../../public/Momodustudio-1139-mobile.jpg.jpeg", // portrait crop
+    img: "/Momodustudio-1139.jpg.jpeg",
+    imgMobile: "/Momodustudio-1139-mobile.jpg.jpeg",
     label: "Latest From Collection",
     title: "Fresh Styles",
     buttonText: "New Arrivals",
