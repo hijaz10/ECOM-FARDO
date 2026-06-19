@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { assets } from "../assets/admin_assets/assets";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 const categories = [
   "Lipstick",
@@ -13,65 +13,69 @@ const categories = [
   "Accessories",
 ];
 
-function Add({ token }) {
-  const [image1, setImage1] = useState(false);
-  const [image2, setImage2] = useState(false);
-  const [image3, setImage3] = useState(false);
-  const [image4, setImage4] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+function EditProduct({ token }) {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const productId = searchParams.get("id");
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [product, setProduct] = useState(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    description2: "",
+    price: "",
+    quantity: "",
+    category: "Lipstick",
+    bestSeller: false,
+  });
+
   const [shades, setShades] = useState([]);
   const [shadeInput, setShadeInput] = useState({
     name: "",
     description: "",
     hex: "#000000",
   });
-  const [description2, setDescription2] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("Lipstick");
-  const [bestSeller, setBestSeller] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [quantity, setQuantity] = useState("");
 
-  const onSubmitHandler = async (e) => {
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/product/single/${productId}`,
+      );
+      if (response.data.success) {
+        const p = response.data.product;
+        setProduct(p);
+        setFormData({
+          name: p.name,
+          description: p.description,
+          description2: p.description2 || "",
+          price: p.price,
+          category: p.category,
+          bestSeller: p.bestSeller,
+        });
+        setShades(p.shades || []);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("description2", description2);
-      formData.append("shades", JSON.stringify(shades));
-      formData.append("price", price);
-      formData.append("category", category);
-      formData.append("bestSeller", bestSeller);
-      formData.append("quantity", quantity);
-      image1 && formData.append("image1", image1);
-      image2 && formData.append("image2", image2);
-      image3 && formData.append("image3", image3);
-      image4 && formData.append("image4", image4);
-
+      setSaving(true);
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/product/add`,
-        formData,
+        `${import.meta.env.VITE_BACKEND_URL}/api/product/edit`,
+        { id: productId, ...formData, shades },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-
       if (response.data.success) {
-        alert("Product added successfully!");
-        setName("");
-        setDescription("");
-        setDescription2("");
-        setShades([]);
-        setShadeInput({ name: "", description: "", hex: "#000000" });
-        setPrice("");
-        setQuantity("");
-        setCategory("Lipstick");
-        setBestSeller(false);
-        setImage1(false);
-        setImage2(false);
-        setImage3(false);
-        setImage4(false);
+        alert("Product updated successfully!");
+        navigate("/list");
       } else {
         alert(response.data.message);
       }
@@ -79,61 +83,71 @@ function Add({ token }) {
       console.error(error);
       alert("Something went wrong");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  useEffect(() => {
+    if (productId) fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-8 animate-pulse max-w-2xl">
+        <div className="h-8 bg-muted w-48 rounded mb-8" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-12 bg-muted rounded mb-4" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!product)
+    return <div className="p-8 text-muted-foreground">Product not found.</div>;
+
   return (
     <div className="w-full min-h-screen px-4 sm:px-6 lg:px-10 py-6 sm:py-8 lg:py-10">
-      <p className="text-lg sm:text-xl lg:text-2xl font-bold mb-6 sm:mb-8 uppercase tracking-widest text-foreground">
-        Add Product
+      <p className="text-lg sm:text-xl lg:text-2xl font-bold mb-8 uppercase tracking-widest text-foreground">
+        Edit Product
       </p>
 
-      <form
-        onSubmit={onSubmitHandler}
-        className="flex flex-col gap-5 sm:gap-6 w-full max-w-3xl"
-      >
-        {/* UPLOAD IMAGES */}
-        <div>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-3 text-foreground">
-            Product Images
-          </p>
-          <div className="flex gap-2 sm:gap-3 flex-wrap">
-            {[
-              { state: image1, setter: setImage1, id: "image1" },
-              { state: image2, setter: setImage2, id: "image2" },
-              { state: image3, setter: setImage3, id: "image3" },
-              { state: image4, setter: setImage4, id: "image4" },
-            ].map(({ state, setter, id }) => (
-              <label key={id} htmlFor={id} className="cursor-pointer">
-                <img
-                  src={state ? URL.createObjectURL(state) : assets.upload_area}
-                  alt="upload"
-                  className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-cover border border-border hover:border-primary transition-colors"
-                />
-                <input
-                  type="file"
-                  id={id}
-                  hidden
-                  onChange={(e) => setter(e.target.files[0])}
-                />
-              </label>
-            ))}
-          </div>
+      {/* CURRENT IMAGES,  Cannot be edit*/}
+      <div className="mb-6">
+        <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-3 text-foreground">
+          Product Images (read only)
+        </p>
+        <div className="flex gap-2 sm:gap-3 flex-wrap">
+          {product.image.map((img, i) => (
+            <img
+              key={i}
+              src={img}
+              alt={`img-${i}`}
+              className="w-16 h-16 sm:w-20 sm:h-20 object-cover border border-border opacity-70"
+            />
+          ))}
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Images cannot be changed after upload.
+        </p>
+      </div>
 
-        {/* PRODUCT NAME */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-5 w-full max-w-3xl"
+      >
+        {/* NAME */}
         <div>
           <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Product Name
           </p>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter product name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
             required
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
@@ -143,12 +157,13 @@ function Add({ token }) {
             Description
           </p>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter product description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
             required
             rows={4}
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
@@ -157,14 +172,19 @@ function Add({ token }) {
           <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Description 2{" "}
             <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs">
-              (optional)
+              (ingredients / extra details)
             </span>
           </p>
           <textarea
-            value={description2}
-            onChange={(e) => setDescription2(e.target.value)}
+            value={formData.description2}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                description2: e.target.value,
+              }))
+            }
             rows={3}
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
@@ -203,7 +223,6 @@ function Add({ token }) {
             </div>
           )}
 
-          {/* SHADE INPUTS  */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-col sm:flex-row gap-2">
               <input
@@ -258,15 +277,17 @@ function Add({ token }) {
           </div>
         </div>
 
-        {/* CATEGORY and  PRICE */}
+        {/* CATEGORY + PRICE */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
               Category
             </p>
             <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={formData.category}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, category: e.target.value }))
+              }
               className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
             >
               {categories.map((cat) => (
@@ -284,16 +305,17 @@ function Add({ token }) {
             <div className="relative">
               <input
                 type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="Enter price"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, price: e.target.value }))
+                }
                 required
                 min={0}
-                className="border border-border px-3 sm:px-4 py-2.5 pr-24 text-sm outline-none w-full bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+                className="border border-border px-3 sm:px-4 py-2.5 pr-24 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
               />
-              {price && (
+              {formData.price && (
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium pointer-events-none">
-                  ₦{Number(price).toLocaleString()}
+                  ₦{Number(formData.price).toLocaleString()}
                 </span>
               )}
             </div>
@@ -306,12 +328,13 @@ function Add({ token }) {
           </p>
           <input
             type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Enter available stock"
+            value={formData.quantity}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, quantity: e.target.value }))
+            }
             required
             min={0}
-            className="border border-border px-4 py-2 text-sm outline-none w-full sm:w-48 bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+            className="border border-border px-4 py-2 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
@@ -320,8 +343,13 @@ function Add({ token }) {
           <input
             type="checkbox"
             id="bestSeller"
-            checked={bestSeller}
-            onChange={(e) => setBestSeller(e.target.checked)}
+            checked={formData.bestSeller}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                bestSeller: e.target.checked,
+              }))
+            }
             className="w-4 h-4 accent-primary cursor-pointer shrink-0"
           />
           <label
@@ -332,21 +360,30 @@ function Add({ token }) {
           </label>
         </div>
 
-        {/* SUBMIT */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`px-6 sm:px-8 py-3 text-sm font-semibold uppercase tracking-widest transition-colors w-full sm:w-fit ${
-            loading
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "bg-primary text-primary-foreground hover:bg-primary/90"
-          }`}
-        >
-          {loading ? "Uploading..." : "Add Product"}
-        </button>
+        {/* BUTTONS */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className={`px-6 sm:px-8 py-3 text-sm font-semibold uppercase tracking-widest transition-colors w-full sm:w-fit ${
+              saving
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            }`}
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/list")}
+            className="px-6 sm:px-8 py-3 text-sm font-semibold uppercase tracking-widest border border-border hover:border-primary transition-colors w-full sm:w-fit"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
 }
 
-export default Add;
+export default EditProduct;
