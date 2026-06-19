@@ -207,10 +207,6 @@ function LogIn() {
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
 
-            <p className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors text-right">
-              Forgot your password?
-            </p>
-
             <button
               type="submit"
               disabled={loading}
