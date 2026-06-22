@@ -23,10 +23,29 @@ await connectDB();
 initCloudinary();
 
 const app = express();
+
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
-// middleware
-app.use(cors());
+const allowedOrigins = [
+  "https://fardocosmetics.com",
+  "https://www.fardocosmetics.com",
+  "https://admin.fardocosmetics.com",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
 app.use(helmet());
 app.use(generalLimiter);
