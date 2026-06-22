@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Cart from "./pages/Cart";
@@ -84,6 +84,13 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/return-policy" element={<ReturnPolicy />} />
+
+          {/* OLD GOOGLE / PREVIOUS WEBSITE ROUTES */}
+          <Route
+            path="/product-category/:category"
+            element={<Navigate to="/collection" replace />}
+          />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
