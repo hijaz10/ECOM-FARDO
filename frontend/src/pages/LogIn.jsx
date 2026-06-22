@@ -148,20 +148,23 @@ function LogIn() {
   const handleResendOTP = async () => {
     if (resendTimer > 0) return;
 
+    setResendTimer(60); // lock immediately to prevent double-clicks
+
     try {
       const response = await axios.post(`${backendUrl}/api/user/send-otp`, {
         email,
       });
 
       if (response.data.success) {
-        setResendTimer(60);
         toast.success("OTP resent!");
       } else {
         setError(response.data.message);
+        setResendTimer(0); // unlock if it actually failed
       }
     } catch (error) {
       console.error(error);
       setError("Something went wrong");
+      setResendTimer(0); // unlock on error too
     }
   };
 
