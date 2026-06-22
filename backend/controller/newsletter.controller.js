@@ -19,9 +19,12 @@ const subscribe = async (req, res) => {
 
     // send welcome email
     await transporter.sendMail({
-      from: `"Fardo Beauty" <${process.env.EMAIL_USER}>`,
+      from: {
+        name: "Fardo Cosmetics",
+        address: "support@fardocosmetics.com",
+      },
       to: email,
-      subject: "Welcome to Fardo — You're In! 💄",
+      subject: "Welcome to Fardo — You're In! ",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
           <h1 style="font-size: 32px; font-weight: 900; color: #12124a; margin: 0 0 8px;">FARDO.</h1>
@@ -96,7 +99,10 @@ const sendNewsletter = async (req, res) => {
     for (let i = 0; i < emailList.length; i += batchSize) {
       const batch = emailList.slice(i, i + batchSize);
       await transporter.sendMail({
-        from: `"Fardo Beauty" <${process.env.EMAIL_USER}>`,
+        from: {
+          name: "Fardo Cosmetics",
+          address: "support@fardocosmetics.com",
+        },
         bcc: batch, // use BCC so emails are private
         subject,
         html: `

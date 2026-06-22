@@ -35,7 +35,10 @@ const sendOrderConfirmationEmail = async (order, address) => {
       .join("");
 
     await transporter.sendMail({
-      from: `"Fardo Beauty" <${process.env.EMAIL_USER}>`,
+      from: {
+        name: "Fardo Cosmetics",
+        address: "support@fardocosmetics.com",
+      },
       to: address.email,
       subject: `Order Confirmed — Fardo Beauty`,
       html: `
