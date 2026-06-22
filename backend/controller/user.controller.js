@@ -35,7 +35,10 @@ const sendOTP = async (req, res) => {
 
     // send email
     await transporter.sendMail({
-      from: `"Fardo Beauty" <${process.env.EMAIL_USER}>`,
+      from: {
+        name: "Fardo Cosmetics",
+        address: "support@fardocosmetics.com",
+      },
       to: email,
       subject: "Your Fardo Verification Code",
       html: `
