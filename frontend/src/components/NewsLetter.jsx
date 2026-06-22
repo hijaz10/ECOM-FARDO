@@ -21,10 +21,9 @@ function Newsletter() {
         toast.success(response.data.message);
         setEmail("");
       } else {
-        toast.error(response.data.message);
+        toast.error("Something went wrong");
       }
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
