@@ -107,19 +107,27 @@ function Cart() {
                         </div>
                       )}
                     </div>
+
+                    {item.quantity >= product.quantity && (
+                      <p className="text-xs text-orange-500 mt-1">
+                        Only {product.quantity} in stock
+                      </p>
+                    )}
                   </div>
 
                   <input
                     type="number"
                     min={1}
+                    max={product.quantity}
                     value={item.quantity}
-                    onChange={(e) =>
-                      updateQuantity(
-                        item._id,
-                        item.shade,
-                        Number(e.target.value),
-                      )
-                    }
+                    onChange={(e) => {
+                      const newQty = Number(e.target.value);
+                      if (newQty > product.quantity) {
+                        updateQuantity(item._id, item.shade, product.quantity);
+                      } else {
+                        updateQuantity(item._id, item.shade, newQty);
+                      }
+                    }}
                     className="w-16 border border-border px-2 py-1 text-sm outline-none bg-background text-center"
                   />
                   <Trash2
