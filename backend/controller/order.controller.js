@@ -256,6 +256,21 @@ const verifyPaystack = async (req, res) => {
     await orderModel.findByIdAndUpdate(orderId, { payment: true });
     await userModel.findByIdAndUpdate(existingOrder.userId, { cartData: {} });
 
+    // DECREMENT PRODUCT QUANTITY (atomic, only if enough stock remains)
+    for (const item of existingOrder.items) {
+      const updated = await productModel.findOneAndUpdate(
+        { _id: item._id, quantity: { $gte: item.quantity } },
+        { $inc: { quantity: -item.quantity } },
+        { new: true },
+      );
+
+      if (!updated) {
+        console.error(
+          `Stock issue: not enough quantity for product ${item._id}, ordered ${item.quantity}`,
+        );
+      }
+    }
+
     if (!existingOrder.confirmationEmailSent) {
       await sendOrderConfirmationEmail(existingOrder, existingOrder.address);
       await orderModel.findByIdAndUpdate(orderId, {

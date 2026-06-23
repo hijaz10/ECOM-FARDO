@@ -38,15 +38,6 @@ const subscribe = async (req, res) => {
             that gets first access to new arrivals, special offers, and beauty tips.
           </p>
 
-          <div style="background: #6c5ce7; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 32px;">
-            <p style="color: white; font-size: 14px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 2px;">
-              Your Welcome Gift
-            </p>
-            <p style="color: white; font-size: 36px; font-weight: 900; margin: 0;">20% OFF</p>
-            <p style="color: rgba(255,255,255,0.8); font-size: 12px; margin: 8px 0 0;">
-              on your first order
-            </p>
-          </div>
 
           <p style="color: #4a4a6a; font-size: 12px; margin: 0;">
             You can unsubscribe at any time by contacting us.
