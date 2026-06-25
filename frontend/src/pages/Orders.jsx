@@ -91,16 +91,13 @@ function Orders() {
                   </div>
                 </div>
                 <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-3 justify-between sm:justify-start">
+                  <p className="border border-border px-4 py-2 text-xs font-semibold uppercase tracking-widest transition-all">
+                    Order Status
+                  </p>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                     <p className="text-sm font-medium">{item.status}</p>
                   </div>
-                  <button
-                    onClick={loadOrders}
-                    className="border border-border px-4 py-2 text-xs font-semibold uppercase tracking-widest hover:border-primary hover:text-primary transition-all"
-                  >
-                    Track Order
-                  </button>
                 </div>
               </div>
             ))}

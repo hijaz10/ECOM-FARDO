@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +32,13 @@ function PlaceOrder() {
     phone: "",
   });
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!token) {
+      toast.error("Please login to continue");
+      navigate("/login");
+    }
+  }, [token]);
 
   const paystackConfig = {
     email: formData.email || "customer@fardo.com",
