@@ -38,6 +38,7 @@ const Product = () => {
   const [submitting, setSubmitting] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [selectedShade, setSelectedShade] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const reviewsRef = useRef(null);
   const isReviewsInView = useInView(reviewsRef, { once: true, amount: 0.2 });
@@ -177,6 +178,28 @@ const Product = () => {
   };
 
   useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+
+      if (e.key === "ArrowLeft") {
+        prevImage();
+      }
+
+      if (e.key === "ArrowRight") {
+        nextImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen, selectedIndex]);
+
+  useEffect(() => {
     fetchProductData();
   }, [productId, products]);
 
@@ -288,7 +311,8 @@ const Product = () => {
           {/* MAIN IMAGE */}
           <motion.div
             variants={fadeUp}
-            className="flex-1 relative group overflow-hidden bg-muted/20"
+            onClick={() => setIsLightboxOpen(true)}
+            className="flex-1 relative group overflow-hidden bg-muted/20 cursor-zoom-in"
           >
             <AnimatePresence mode="wait">
               <motion.img
@@ -308,13 +332,13 @@ const Product = () => {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center transition-opacity hover:bg-background"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-background/80 backdrop-blur-sm flex items-center justify-center transition-opacity hover:bg-background"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -866,6 +890,83 @@ const Product = () => {
           </div>
         </motion.div>
       )}
+      <AnimatePresence>
+        {isLightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            {/* Previous */}
+            {productData.image.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-5 text-white hover:scale-110 transition"
+              >
+                <ChevronLeft size={42} />
+              </button>
+            )}
+
+            {/* Image */}
+            <motion.img
+              key={selectedImage}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              src={selectedImage}
+              alt=""
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[90vh] max-w-[90vw] object-contain"
+            />
+
+            {/* Next */}
+            {productData.image.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-5 text-white hover:scale-110 transition"
+              >
+                <ChevronRight size={42} />
+              </button>
+            )}
+
+            {/* Close */}
+            <button
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute top-5 right-5 text-white text-4xl"
+            >
+              ×
+            </button>
+
+            {/* Dots */}
+            <div className="absolute bottom-8 flex gap-2">
+              {productData.image.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedIndex(i);
+                    setSelectedImage(productData.image[i]);
+                  }}
+                  className={`rounded-full transition-all ${
+                    selectedIndex === i
+                      ? "w-8 h-2 bg-white"
+                      : "w-2 h-2 bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

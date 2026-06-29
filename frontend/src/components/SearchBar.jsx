@@ -11,22 +11,21 @@ function SearchBar() {
   const navigate = useNavigate();
 
   const suggestions = useMemo(() => {
-    if (!search.trim()) return [];
+    const query = search.trim().toLowerCase();
 
-    const query = search.toLowerCase();
+    if (!query) return [];
 
     return products
       .filter((product) => {
         return (
-          product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query) ||
-          product.subCategory.toLowerCase().includes(query)
+          (product.name || "").toLowerCase().includes(query) ||
+          (product.category || "").toLowerCase().includes(query)
         );
       })
       .slice(0, 5);
   }, [search, products]);
 
-  if (!showSearch || !location.pathname.includes("collection")) {
+  if (!showSearch || !location.pathname.includes("/collection")) {
     return null;
   }
 
@@ -80,7 +79,7 @@ function SearchBar() {
                 >
                   <div className="overflow-hidden rounded-sm">
                     <img
-                      src={product.image[0]}
+                      src={product.image?.[0]}
                       alt={product.name}
                       className="h-14 w-14 object-cover object-top transition-transform duration-500 group-hover:scale-110"
                     />
@@ -92,12 +91,12 @@ function SearchBar() {
                     </p>
 
                     <p className="text-xs tracking-wide text-muted-foreground">
-                      {product.category} · {product.subCategory}
+                      {product.category}
                     </p>
                   </div>
 
                   <p className="ml-auto text-sm font-semibold text-primary">
-                    ${product.price}
+                    ₦{Number(product.price).toLocaleString()}
                   </p>
                 </div>
               ))}
@@ -105,7 +104,7 @@ function SearchBar() {
           )}
 
           {/* NO RESULTS */}
-          {search && suggestions.length === 0 && (
+          {search.trim() && suggestions.length === 0 && (
             <div className="absolute left-0 top-[calc(100%+12px)] z-50 w-full rounded-3xl border border-border/60 bg-white/95 px-5 py-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.08)]">
               <p className="text-sm text-muted-foreground">
                 No products found for{" "}
