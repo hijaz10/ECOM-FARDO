@@ -15,7 +15,7 @@ const userRouter = express.Router();
 
 userRouter.post("/login", authLimiter, loginUser);
 userRouter.post("/register", authLimiter, registerUser);
-userRouter.post("/admin", authLimiter, adminLogin);
+userRouter.post("/admin", adminLogin);
 userRouter.post("/send-otp", otpLimiter, sendOTP);
 userRouter.post("/verify-otp", otpLimiter, verifyOTP);
 userRouter.get("/profile", userAuth, getUserProfile);

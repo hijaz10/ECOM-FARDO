@@ -29,6 +29,8 @@ const productSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, default: 0 },
   shades: { type: [shadeSchema], default: [] },
   bestSeller: { type: Boolean, default: false },
+  onSale: { type: Boolean, default: false },
+  discountPercent: { type: Number, default: 0 },
   date: { type: Date, default: Date.now },
 });
 

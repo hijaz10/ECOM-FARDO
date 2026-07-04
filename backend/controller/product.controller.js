@@ -15,6 +15,8 @@ const addProduct = async (req, res) => {
       bestSeller,
       shades,
       quantity,
+      onSale,
+      discountPercent,
     } = req.body;
 
     const images = [
@@ -43,6 +45,8 @@ const addProduct = async (req, res) => {
       shades: shades ? JSON.parse(shades) : [],
       bestSeller: bestSeller === "true",
       image: imageUrls,
+      onSale: onSale === "true" || onSale === true,
+      discountPercent: Number(discountPercent) || 0,
       date: Date.now(),
     });
 
@@ -65,6 +69,8 @@ const editProduct = async (req, res) => {
       bestSeller,
       shades,
       quantity,
+      onSale,
+      discountPercent,
     } = req.body;
 
     await productModel.findByIdAndUpdate(id, {
@@ -74,6 +80,8 @@ const editProduct = async (req, res) => {
       price: Number(price),
       category,
       quantity: Number(quantity) || 0,
+      onSale: onSale === "true" || onSale === true,
+      discountPercent: Number(discountPercent) || 0,
       shades: typeof shades === "string" ? JSON.parse(shades) : shades || [],
       bestSeller: bestSeller === "true" || bestSeller === true,
     });
