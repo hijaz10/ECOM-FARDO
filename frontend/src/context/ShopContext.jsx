@@ -91,8 +91,14 @@ const ShopContextProvider = (props) => {
     for (const itemId in cartItems) {
       const product = products.find((p) => p._id === itemId);
       if (!product) continue;
+
+      const effectivePrice =
+        product.onSale && product.discountPercent > 0
+          ? product.price * (1 - product.discountPercent / 100)
+          : product.price;
+
       for (const key in cartItems[itemId]) {
-        total += product.price * cartItems[itemId][key];
+        total += effectivePrice * cartItems[itemId][key];
       }
     }
     return total;

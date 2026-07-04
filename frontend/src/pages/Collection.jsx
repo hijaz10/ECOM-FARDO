@@ -22,6 +22,7 @@ const Collection = () => {
   const [category, setCategory] = useState([]);
   const [sortType, setSortType] = useState("relevant");
   const [loading, setLoading] = useState(true);
+  const [showSaleOnly, setShowSaleOnly] = useState(false);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -48,6 +49,10 @@ const Collection = () => {
       filtered = filtered.filter((p) => category.includes(p.category));
     }
 
+    if (showSaleOnly) {
+      filtered = filtered.filter((p) => p.onSale && p.discountPercent > 0);
+    }
+
     setFilterProducts(filtered);
   };
 
@@ -71,6 +76,10 @@ const Collection = () => {
   useEffect(() => {
     applySort();
   }, [sortType]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [category, products, search, showSearch, showSaleOnly]);
 
   return (
     <div className="flex flex-col sm:flex-row gap-6 pt-10 animate-fade-in animation-delay-300">
@@ -115,6 +124,20 @@ const Collection = () => {
               </label>
             ))}
           </div>
+        </div>
+
+        <div
+          className={`border border-border pl-5 py-4 mb-4 ${showFilter ? "block" : "hidden"} sm:block`}
+        >
+          <label className="flex items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              checked={showSaleOnly}
+              onChange={(e) => setShowSaleOnly(e.target.checked)}
+              className="accent-primary"
+            />
+            <span className="font-medium text-primary">On Sale</span>
+          </label>
         </div>
       </div>
 

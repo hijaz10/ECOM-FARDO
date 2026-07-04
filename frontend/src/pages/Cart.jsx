@@ -65,6 +65,13 @@ function Cart() {
                 ? product.shades?.find((s) => s.name === item.shade)
                 : null;
 
+              const isOnSale = product.onSale && product.discountPercent > 0;
+              const effectivePrice = isOnSale
+                ? (product.price * (1 - product.discountPercent / 100)).toFixed(
+                    2,
+                  )
+                : product.price;
+
               return (
                 <div
                   key={index}
@@ -75,6 +82,28 @@ function Cart() {
                     alt={product.name}
                     className="w-20 h-20 object-cover object-top shrink-0"
                   />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">{product.name}</p>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {isOnSale ? (
+                        <>
+                          <p className="text-sm font-semibold text-primary">
+                            {currency}
+                            {effectivePrice}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-through">
+                            {currency}
+                            {product.price}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          {currency}
+                          {product.price}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold">{product.name}</p>
                     <div className="flex items-center gap-3 mt-2 flex-wrap">

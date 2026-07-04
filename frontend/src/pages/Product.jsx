@@ -434,17 +434,36 @@ const Product = () => {
           </motion.div>
 
           {/* PRICE */}
-          <motion.div variants={fadeUp} className="flex items-baseline gap-2">
-            <span
-              className="font-black text-foreground"
-              style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
-            >
-              {currency}
-              {productData.price.toLocaleString("en-NG", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+          <motion.div variants={fadeUp} className="flex items-baseline gap-3">
+            {productData.onSale && productData.discountPercent > 0 ? (
+              <>
+                <span
+                  className="font-black text-primary"
+                  style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
+                >
+                  {currency}
+                  {(
+                    productData.price *
+                    (1 - productData.discountPercent / 100)
+                  ).toFixed(2)}
+                </span>
+                <span className="text-lg text-muted-foreground line-through">
+                  {currency}
+                  {productData.price}
+                </span>
+                <span className="bg-red-500 text-white text-xs font-bold uppercase tracking-widest px-2.5 py-1">
+                  -{productData.discountPercent}%
+                </span>
+              </>
+            ) : (
+              <span
+                className="font-black text-foreground"
+                style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
+              >
+                {currency}
+                {productData.price}
+              </span>
+            )}
           </motion.div>
 
           {/* DESCRIPTION PREVIEW */}
