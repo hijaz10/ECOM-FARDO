@@ -21,17 +21,17 @@ function EditProduct({ token }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [product, setProduct] = useState(null);
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     description2: "",
     price: "",
-    quantity: "",
     category: "Lipstick",
+    quantity: "",
     bestSeller: false,
+    onSale: false,
+    discountPercent: "",
   });
-
   const [shades, setShades] = useState([]);
   const [shadeInput, setShadeInput] = useState({
     name: "",
@@ -53,7 +53,10 @@ function EditProduct({ token }) {
           description2: p.description2 || "",
           price: p.price,
           category: p.category,
+          quantity: p.quantity || 0,
           bestSeller: p.bestSeller,
+          onSale: p.onSale || false,
+          discountPercent: p.discountPercent || "",
         });
         setShades(p.shades || []);
       }
@@ -70,7 +73,12 @@ function EditProduct({ token }) {
       setSaving(true);
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/product/edit`,
-        { id: productId, ...formData, shades },
+        {
+          id: productId,
+          ...formData,
+          shades: JSON.stringify(shades),
+          discountPercent: formData.onSale ? formData.discountPercent : 0,
+        },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (response.data.success) {
@@ -93,7 +101,7 @@ function EditProduct({ token }) {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-8 animate-pulse max-w-2xl">
+      <div className="p-4 md:p-8 animate-pulse w-full max-w-2xl mx-auto">
         <div className="h-8 bg-muted w-48 rounded mb-8" />
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-12 bg-muted rounded mb-4" />
@@ -102,21 +110,25 @@ function EditProduct({ token }) {
     );
   }
 
-  if (!product)
+  if (!product) {
     return <div className="p-8 text-muted-foreground">Product not found.</div>;
+  }
 
   return (
-    <div className="w-full min-h-screen px-4 sm:px-6 lg:px-10 py-6 sm:py-8 lg:py-10">
-      <p className="text-lg sm:text-xl lg:text-2xl font-bold mb-8 uppercase tracking-widest text-foreground">
+    <div className="w-full max-w-2xl mx-auto px-4 py-6 md:px-8 md:py-10">
+      <p className="text-lg sm:text-xl md:text-2xl font-bold mb-6 md:mb-8 uppercase tracking-widest text-foreground">
         Edit Product
       </p>
 
-      {/* CURRENT IMAGES,  Cannot be edit*/}
+      {/* CURRENT IMAGES - view only */}
       <div className="mb-6">
-        <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-3 text-foreground">
-          Product Images (read only)
+        <p className="text-sm font-semibold uppercase tracking-widest mb-3 text-foreground">
+          Product Images{" "}
+          <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs ml-1">
+            (cannot be changed)
+          </span>
         </p>
-        <div className="flex gap-2 sm:gap-3 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           {product.image.map((img, i) => (
             <img
               key={i}
@@ -126,18 +138,12 @@ function EditProduct({ token }) {
             />
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Images cannot be changed after upload.
-        </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-5 w-full max-w-3xl"
-      >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* NAME */}
         <div>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Product Name
           </p>
           <input
@@ -146,14 +152,13 @@ function EditProduct({ token }) {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, name: e.target.value }))
             }
-            required
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
+            className="border border-border px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
         {/* DESCRIPTION */}
         <div>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Description
           </p>
           <textarea
@@ -161,39 +166,88 @@ function EditProduct({ token }) {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            required
             rows={4}
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
+            className="border border-border px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
         {/* DESCRIPTION 2 */}
         <div>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Description 2{" "}
-            <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs">
-              (ingredients / extra details)
+            <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs ml-1">
+              (ingredients / extra details — optional)
             </span>
           </p>
           <textarea
             value={formData.description2}
             onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                description2: e.target.value,
-              }))
+              setFormData((prev) => ({ ...prev, description2: e.target.value }))
             }
             rows={3}
-            className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
+            className="border border-border px-4 py-2.5 text-sm outline-none w-full resize-none bg-background text-foreground focus:border-primary transition-colors"
+          />
+        </div>
+
+        {/* CATEGORY + PRICE */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+              Category
+            </p>
+            <select
+              value={formData.category}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, category: e.target.value }))
+              }
+              className="border border-border px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1">
+            <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+              Price (NGN)
+            </p>
+            <input
+              type="number"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, price: e.target.value }))
+              }
+              min={0}
+              className="border border-border px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* STOCK QUANTITY */}
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+            Stock Quantity
+          </p>
+          <input
+            type="number"
+            value={formData.quantity}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, quantity: e.target.value }))
+            }
+            min={0}
+            className="border border-border px-4 py-2.5 text-sm outline-none w-full sm:w-48 bg-background text-foreground focus:border-primary transition-colors"
           />
         </div>
 
         {/* SHADES */}
         <div>
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
             Shades{" "}
-            <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs">
-              (optional)
+            <span className="text-muted-foreground font-normal normal-case tracking-normal text-xs ml-1">
+              — optional
             </span>
           </p>
 
@@ -214,7 +268,7 @@ function EditProduct({ token }) {
                     onClick={() =>
                       setShades((prev) => prev.filter((_, idx) => idx !== i))
                     }
-                    className="text-muted-foreground hover:text-red-500 ml-1 text-base leading-none"
+                    className="text-muted-foreground hover:text-red-500 ml-1"
                   >
                     ×
                   </button>
@@ -231,7 +285,7 @@ function EditProduct({ token }) {
                 onChange={(e) =>
                   setShadeInput((prev) => ({ ...prev, name: e.target.value }))
                 }
-                placeholder="Shade name e.g. Rosewood"
+                placeholder="Shade name"
                 className="border border-border px-3 py-2.5 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors flex-1"
               />
               <input
@@ -247,12 +301,9 @@ function EditProduct({ token }) {
                 className="border border-border px-3 py-2.5 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors flex-1"
               />
             </div>
-
             <div className="flex gap-2">
-              <div className="flex items-center gap-2 border border-border px-3 py-2.5 flex-1">
-                <label className="text-xs text-muted-foreground whitespace-nowrap">
-                  Pick Color
-                </label>
+              <div className="flex items-center gap-2 border border-border px-3 py-2 flex-1">
+                <label className="text-xs text-muted-foreground">Color</label>
                 <input
                   type="color"
                   value={shadeInput.hex}
@@ -261,6 +312,9 @@ function EditProduct({ token }) {
                   }
                   className="w-8 h-6 cursor-pointer border-none outline-none bg-transparent"
                 />
+                <span className="text-xs text-muted-foreground ml-1">
+                  {shadeInput.hex}
+                </span>
               </div>
               <button
                 type="button"
@@ -269,73 +323,12 @@ function EditProduct({ token }) {
                   setShades((prev) => [...prev, { ...shadeInput }]);
                   setShadeInput({ name: "", description: "", hex: "#000000" });
                 }}
-                className="border border-primary text-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap"
+                className="border border-primary text-primary px-4 py-2 text-xs font-semibold uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap"
               >
                 + Add
               </button>
             </div>
           </div>
-        </div>
-
-        {/* CATEGORY + PRICE */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
-              Category
-            </p>
-            <select
-              value={formData.category}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, category: e.target.value }))
-              }
-              className="border border-border px-3 sm:px-4 py-2.5 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex-1">
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
-              Price (NGN)
-            </p>
-            <div className="relative">
-              <input
-                type="number"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, price: e.target.value }))
-                }
-                required
-                min={0}
-                className="border border-border px-3 sm:px-4 py-2.5 pr-24 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
-              />
-              {formData.price && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium pointer-events-none">
-                  ₦{Number(formData.price).toLocaleString()}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
-            Stock Quantity
-          </p>
-          <input
-            type="number"
-            value={formData.quantity}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, quantity: e.target.value }))
-            }
-            required
-            min={0}
-            className="border border-border px-4 py-2 text-sm outline-none w-full bg-background text-foreground focus:border-primary transition-colors"
-          />
         </div>
 
         {/* BESTSELLER */}
@@ -345,27 +338,86 @@ function EditProduct({ token }) {
             id="bestSeller"
             checked={formData.bestSeller}
             onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                bestSeller: e.target.checked,
-              }))
+              setFormData((prev) => ({ ...prev, bestSeller: e.target.checked }))
             }
             className="w-4 h-4 accent-primary cursor-pointer shrink-0"
           />
           <label
             htmlFor="bestSeller"
-            className="text-xs sm:text-sm font-semibold uppercase tracking-widest cursor-pointer text-foreground"
+            className="text-sm font-semibold uppercase tracking-widest cursor-pointer text-foreground"
           >
             Mark as Bestseller
           </label>
         </div>
 
+        {/* SALES CAMPAIGN */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="onSale"
+              checked={formData.onSale}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  onSale: e.target.checked,
+                  discountPercent: e.target.checked ? prev.discountPercent : "",
+                }));
+              }}
+              className="w-4 h-4 accent-primary cursor-pointer shrink-0"
+            />
+            <label
+              htmlFor="onSale"
+              className="text-sm font-semibold uppercase tracking-widest cursor-pointer text-foreground"
+            >
+              Add to Sales Campaign
+            </label>
+          </div>
+
+          {formData.onSale && (
+            <div className="ml-7 flex flex-col gap-2">
+              <p className="text-sm font-semibold uppercase tracking-widest text-foreground">
+                Discount Percentage (%)
+              </p>
+              <input
+                type="number"
+                value={formData.discountPercent}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    discountPercent: e.target.value,
+                  }))
+                }
+                placeholder="e.g. 20"
+                min={1}
+                max={90}
+                className="border border-border px-4 py-2.5 text-sm outline-none w-full sm:w-48 bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+              />
+              {formData.discountPercent && formData.price && (
+                <p className="text-xs text-muted-foreground">
+                  Sale price will be:{" "}
+                  <span className="text-primary font-semibold">
+                    ₦
+                    {(
+                      formData.price *
+                      (1 - formData.discountPercent / 100)
+                    ).toFixed(2)}
+                  </span>{" "}
+                  <span className="line-through">
+                    ₦{Number(formData.price).toFixed(2)}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* BUTTONS */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             type="submit"
             disabled={saving}
-            className={`px-6 sm:px-8 py-3 text-sm font-semibold uppercase tracking-widest transition-colors w-full sm:w-fit ${
+            className={`w-full sm:w-auto px-8 py-3 text-sm font-semibold uppercase tracking-widest transition-colors ${
               saving
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -376,7 +428,7 @@ function EditProduct({ token }) {
           <button
             type="button"
             onClick={() => navigate("/list")}
-            className="px-6 sm:px-8 py-3 text-sm font-semibold uppercase tracking-widest border border-border hover:border-primary transition-colors w-full sm:w-fit"
+            className="w-full sm:w-auto px-8 py-3 text-sm font-semibold uppercase tracking-widest border border-border hover:border-primary transition-colors"
           >
             Cancel
           </button>

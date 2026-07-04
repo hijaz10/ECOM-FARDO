@@ -32,6 +32,8 @@ function Add({ token }) {
   const [bestSeller, setBestSeller] = useState(false);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState("");
+  const [onSale, setOnSale] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState("");
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -46,6 +48,8 @@ function Add({ token }) {
       formData.append("category", category);
       formData.append("bestSeller", bestSeller);
       formData.append("quantity", quantity);
+      formData.append("onSale", onSale);
+      formData.append("discountPercent", onSale ? discountPercent : 0);
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
       image3 && formData.append("image3", image3);
@@ -72,6 +76,8 @@ function Add({ token }) {
         setImage2(false);
         setImage3(false);
         setImage4(false);
+        setOnSale(false);
+        setDiscountPercent("");
       } else {
         alert(response.data.message);
       }
@@ -330,6 +336,48 @@ function Add({ token }) {
           >
             Mark as Bestseller
           </label>
+        </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="onSale"
+              checked={onSale}
+              onChange={(e) => setOnSale(e.target.checked)}
+              className="w-4 h-4 accent-primary cursor-pointer"
+            />
+            <label
+              htmlFor="onSale"
+              className="text-sm font-semibold uppercase tracking-widest cursor-pointer text-foreground"
+            >
+              Add to Sales Campaign
+            </label>
+          </div>
+
+          {onSale && (
+            <div className="ml-7">
+              <p className="text-sm font-semibold uppercase tracking-widest mb-2 text-foreground">
+                Discount Percentage (%)
+              </p>
+              <input
+                type="number"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+                placeholder="e.g. 20"
+                min={1}
+                max={90}
+                required={onSale}
+                className="border border-border px-4 py-2 text-sm outline-none w-full sm:w-48 bg-background text-foreground placeholder:text-muted-foreground focus:border-primary transition-colors"
+              />
+              {discountPercent && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Sale price will be: $
+                  {(price * (1 - discountPercent / 100)).toFixed(2)}
+                  (was ${price || 0})
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* SUBMIT */}
