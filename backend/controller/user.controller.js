@@ -224,7 +224,10 @@ const forgotPassword = async (req, res) => {
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
     await transporter.sendMail({
-      from: `"Fardo Beauty" <${process.env.EMAIL_USER}>`,
+      from: {
+        name: "Fardo Cosmetics",
+        address: "support@fardocosmetics.com",
+      },
       to: email,
       subject: "Reset Your Fardo Password",
       html: `
