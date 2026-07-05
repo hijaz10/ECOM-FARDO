@@ -23,6 +23,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReturnPolicy from "./pages/ReturnPolicy";
 import TermsBanner from "./components/TermsBanner";
 import NotFound from "./components/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -84,8 +86,9 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/return-policy" element={<ReturnPolicy />} />
-
-          {/* OLD GOOGLE / PREVIOUS WEBSITE ROUTES */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* OLD / PREVIOUS WEBSITE ROUTES */}
           <Route
             path="/product-category/:category"
             element={<Navigate to="/collection" replace />}

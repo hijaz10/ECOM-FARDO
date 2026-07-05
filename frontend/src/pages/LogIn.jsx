@@ -209,7 +209,12 @@ function LogIn() {
             />
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
-
+            <p
+              onClick={() => navigate("/forgot-password")}
+              className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors text-right"
+            >
+              Forgot your password?
+            </p>
             <button
               type="submit"
               disabled={loading}
@@ -234,7 +239,6 @@ function LogIn() {
               placeholder="Full name"
               className="border border-border px-4 py-3 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground w-full"
             />
-
             <input
               type="email"
               value={email}
@@ -242,7 +246,6 @@ function LogIn() {
               placeholder="Email address"
               className="border border-border px-4 py-3 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground w-full"
             />
-
             <input
               type="password"
               value={password}
@@ -250,7 +253,6 @@ function LogIn() {
               placeholder="Password"
               className="border border-border px-4 py-3 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground w-full"
             />
-
             <input
               type="password"
               value={confirmPassword}
@@ -258,7 +260,6 @@ function LogIn() {
               placeholder="Confirm password"
               className="border border-border px-4 py-3 text-sm outline-none bg-background text-foreground placeholder:text-muted-foreground w-full"
             />
-
             {error && <p className="text-red-400 text-xs">{error}</p>}
 
             <button
