@@ -7,6 +7,8 @@ import {
   updateUserProfile,
   verifyOTP,
   sendOTP,
+  resetPassword,
+  forgotPassword,
 } from "../controller/user.controller.js";
 import userAuth from "../middleware/user.auth.js";
 import { authLimiter, otpLimiter } from "../middleware/rateLimiter.js";
@@ -20,5 +22,7 @@ userRouter.post("/send-otp", otpLimiter, sendOTP);
 userRouter.post("/verify-otp", otpLimiter, verifyOTP);
 userRouter.get("/profile", userAuth, getUserProfile);
 userRouter.post("/update-profile", userAuth, updateUserProfile);
+userRouter.post("/forgot-password", otpLimiter, forgotPassword);
+userRouter.post("/reset-password", authLimiter, resetPassword);
 
 export default userRouter;
