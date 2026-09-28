@@ -28,9 +28,9 @@ app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
 const allowedOrigins = [
-  "https://fardocosmetics.com",
-  "https://www.fardocosmetics.com",
-  "https://admin.fardocosmetics.com",
+  "https://fardocosmetics.com.ng",
+  "https://www.fardocosmetics.com.ng",
+  "https://admin.fardocosmetics.com.ng",
 ];
 
 app.use(
